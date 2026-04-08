@@ -1,0 +1,93 @@
+{% extends 'notes/base.html' %}
+{% load static %}
+
+{% block title %}Settings — Notsy{% endblock %}
+{% block body_class %}app-page{% endblock %}
+
+{% block body %}
+<header class="topbar">
+    <div class="topbar-inner">
+        <a href="{% url 'dashboard' %}" class="topbar-brand" id="nav-brand-settings">
+            <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+                <rect width="36" height="36" rx="10" fill="#E8645A"/>
+                <path d="M10 11h16v2H10zm0 4h12v2H10zm0 4h14v2H10zm0 4h10v2H10z" fill="#fff"/>
+            </svg>
+            <span>notsy</span>
+        </a>
+        <div class="topbar-nav">
+            <a href="{% url 'dashboard' %}" class="topbar-link" id="nav-back-settings" title="Back to notes">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <div class="settings-page">
+        <h1 class="settings-title">Account settings</h1>
+
+        <!-- Stats -->
+        <section class="settings-section">
+            <h2 class="settings-section-title">Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value">{{ user.username }}</span>
+                    <span class="stat-label">Username</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">{{ stats.total_notes }}</span>
+                    <span class="stat-label">Total notes</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">{{ stats.text_notes }}</span>
+                    <span class="stat-label">Text notes</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">{{ stats.checklists }}</span>
+                    <span class="stat-label">Checklists</span>
+                </div>
+            </div>
+            <p class="settings-meta">Member since {{ stats.member_since|date:"M d, Y" }}</p>
+        </section>
+
+        <!-- Change password -->
+        <section class="settings-section">
+            <h2 class="settings-section-title">Change password</h2>
+            <form method="post" class="settings-form" id="change-password-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_password">
+                {% for field in pw_form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="sr-only">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="field-error">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary" id="change-password-submit">Update password</button>
+            </form>
+        </section>
+
+        <!-- Delete account -->
+        <section class="settings-section settings-danger">
+            <h2 class="settings-section-title danger-title">Danger zone</h2>
+            <p class="danger-description">Deleting your account is permanent. All your notes will be lost and cannot be recovered.</p>
+            <form method="post" class="settings-form" id="delete-account-form" onsubmit="return confirm('Are you absolutely sure? This cannot be undone.')">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_account">
+                {% for field in del_form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="sr-only">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="field-error">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-danger" id="delete-account-submit">Delete my account</button>
+            </form>
+        </section>
+    </div>
+</main>
+{% endblock %}

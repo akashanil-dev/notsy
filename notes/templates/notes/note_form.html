@@ -1,0 +1,97 @@
+{% extends 'notes/base.html' %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Edit Note{% else %}New Note{% endif %} — Notsy{% endblock %}
+{% block body_class %}app-page{% endblock %}
+
+{% block body %}
+<header class="topbar">
+    <div class="topbar-inner">
+        <a href="{% url 'dashboard' %}" class="topbar-brand" id="nav-brand-form">
+            <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+                <rect width="36" height="36" rx="10" fill="#E8645A"/>
+                <path d="M10 11h16v2H10zm0 4h12v2H10zm0 4h14v2H10zm0 4h10v2H10z" fill="#fff"/>
+            </svg>
+            <span>notsy</span>
+        </a>
+        <div class="topbar-nav">
+            <a href="{% url 'dashboard' %}" class="topbar-link" id="nav-back" title="Back to notes">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <div class="note-editor">
+        <form method="post" id="note-form">
+            {% csrf_token %}
+
+            {{ form.note_type }}
+            {{ form.color }}
+
+            <div class="editor-header">
+                <div class="editor-title-row">
+                    {{ form.title }}
+                    <label class="pin-toggle" title="Pin note">
+                        {{ form.pinned }}
+                        <svg class="pin-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 2h6l-1 7h4l-7 8V9H7l2-7z"/></svg>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Text mode -->
+            <div class="editor-body" id="text-editor" style="{% if form.initial.note_type == 'checklist' or form.instance.note_type == 'checklist' %}display:none{% endif %}">
+                {{ form.content }}
+            </div>
+
+            <!-- Checklist mode -->
+            <div class="editor-body checklist-editor" id="checklist-editor" style="{% if form.initial.note_type != 'checklist' and form.instance.note_type != 'checklist' %}display:none{% endif %}">
+                <div class="checklist-items" id="checklist-items">
+                    <!-- Items injected by JS -->
+                </div>
+                <div class="checklist-add-row">
+                    <button type="button" class="checklist-add-btn" id="checklist-add-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>Add item</span>
+                    </button>
+                </div>
+                <input type="hidden" name="checklist_items" id="checklist-items-json" value="[]">
+            </div>
+
+            <!-- Editor footer -->
+            <div class="editor-footer">
+                <div class="editor-footer-left">
+                    <button type="button" class="mode-toggle-btn" id="mode-toggle-btn" title="Convert between text and checklist">
+                        <span class="mode-toggle-icon" id="mode-toggle-icon">
+                            <!-- Icon changes based on mode -->
+                        </span>
+                        <span id="mode-toggle-label">Convert to list</span>
+                    </button>
+
+                    <div class="editor-color-picker">
+                        <button type="button" class="color-dot color-default editor-color-dot" data-color="default" title="Default"></button>
+                        <button type="button" class="color-dot color-coral editor-color-dot" data-color="coral" title="Coral"></button>
+                        <button type="button" class="color-dot color-peach editor-color-dot" data-color="peach" title="Peach"></button>
+                        <button type="button" class="color-dot color-sand editor-color-dot" data-color="sand" title="Sand"></button>
+                        <button type="button" class="color-dot color-sage editor-color-dot" data-color="sage" title="Sage"></button>
+                        <button type="button" class="color-dot color-fog editor-color-dot" data-color="fog" title="Fog"></button>
+                        <button type="button" class="color-dot color-storm editor-color-dot" data-color="storm" title="Storm"></button>
+                        <button type="button" class="color-dot color-dusk editor-color-dot" data-color="dusk" title="Dusk"></button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="note-save-btn">
+                    {% if is_edit %}Save changes{% else %}Create note{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.INITIAL_NOTE_TYPE = '{{ form.instance.note_type|default:"text" }}';
+    window.CHECKLIST_INITIAL = {{ checklist_items_json|default:"[]"|safe }};
+</script>
+{% endblock %}

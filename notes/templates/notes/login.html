@@ -1,0 +1,38 @@
+{% extends 'notes/base.html' %}
+{% load static %}
+
+{% block title %}Log in — Notsy{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block body %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                <rect width="36" height="36" rx="10" fill="#E8645A"/>
+                <path d="M10 11h16v2H10zm0 4h12v2H10zm0 4h14v2H10zm0 4h10v2H10z" fill="#fff"/>
+            </svg>
+            <h1>notsy</h1>
+        </div>
+        <p class="auth-subtitle">Welcome back</p>
+
+        <form method="post" class="auth-form" id="login-form">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="sr-only">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="field-error">{{ field.errors.0 }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary btn-full" id="login-submit">Log in</button>
+        </form>
+
+        <p class="auth-footer">
+            Don't have an account? <a href="{% url 'register' %}">Create one</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

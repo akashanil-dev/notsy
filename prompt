@@ -1,0 +1,13 @@
+i want to create a production ready note taking app, which will be the clone of google keep. i just want the user to enter a username and a password, and he shall be able to create an account, and he shall be able to create notes, checklists, etc etc, there should be markdown support, the user shall be able to set the title of the notes.
+
+a modern,lightweight google keepbut dont copy any of google's ui.
+
+the design inspiration i have in mind is of porkbun, i really love their thin, simple ui, attachments added for reference
+there is no need of forgot password option, also make it very minimal and 
+
+
+the project is in html, css, django, sqlite.
+
+the user shall be able to crate notes, able to edit and update them and also delete, in the account settings, there shall be options to change password and delete acccount.
+
+no need to ask for user's fullname, email etc, just username and password is enoug
