@@ -1,5 +1,5 @@
 {% load static note_extras %}
-<a href="{% url 'note_edit' note.pk %}" class="note-card-link" id="note-link-{{ note.pk }}">
+<div class="note-card-link" id="note-link-{{ note.pk }}" onclick="if(!event.target.closest('form') && !event.target.closest('.note-action-btn') && !event.target.closest('.color-picker-wrap') && !event.target.closest('.note-pin-btn')) { window.location.href='{% url 'note_edit' note.pk %}'; }" style="cursor: pointer;">
 <article class="note-card note-color-{{ note.color }}" data-note-id="{{ note.pk }}" id="note-card-{{ note.pk }}">
     <div class="note-card-header">
         {% if note.title %}
@@ -23,7 +23,7 @@
     </div>
     {% endif %}
 
-    <div class="note-card-footer" onclick="event.preventDefault(); event.stopPropagation();">
+    <div class="note-card-footer">
         <span class="note-card-date">{{ note.updated_at|timesince }} ago</span>
         <div class="note-card-actions">
             <div class="color-picker-wrap">
@@ -71,4 +71,4 @@
         </div>
     </div>
 </article>
-</a>
+</div>

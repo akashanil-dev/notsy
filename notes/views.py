@@ -150,7 +150,8 @@ def note_create(request):
             note.save(update_fields=['preview'])
 
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'status': 'ok', 'id': note.id, 'edit_url': reverse('note_edit', args=[note.id])})
+                html = render_to_string('notes/partials/note_card.html', {'note': note}, request=request)
+                return JsonResponse({'status': 'ok', 'id': note.id, 'edit_url': reverse('note_edit', args=[note.id]), 'html': html})
 
             messages.success(request, 'Note created.')
             return redirect('dashboard')
