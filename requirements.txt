@@ -1,0 +1,7 @@
+asgiref==3.11.1
+bleach==6.3.0
+Django==6.0.3
+Markdown==3.10.2
+mysqlclient==2.2.8
+sqlparse==0.5.5
+webencodings==0.5.1
