@@ -1,0 +1,37 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% block title %}Activity Logs — Admin — Notsy{% endblock %}
+{% block nav_logs %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <h1 class="admin-page-title">Activity Logs</h1>
+        <span class="admin-page-sub">All admin actions recorded here</span>
+    </div>
+</div>
+
+<div class="admin-panel">
+    <table class="admin-table admin-table-full">
+        <thead>
+            <tr><th>Admin</th><th>Action</th><th>Target</th><th>Time</th></tr>
+        </thead>
+        <tbody>
+        {% for log in logs %}
+        <tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div class="ws-avatar ws-avatar-sm" style="background:var(--coral);color:#fff;font-size:0.75rem;">{{ log.admin.username|first|upper }}</div>
+                    <span style="font-weight:500;">{{ log.admin.username }}</span>
+                </div>
+            </td>
+            <td style="font-size:0.87rem;">{{ log.action }}</td>
+            <td style="font-size:0.83rem;color:var(--text-muted);">{{ log.target|default:"—" }}</td>
+            <td style="font-size:0.8rem;color:var(--text-muted);">{{ log.timestamp|date:"M d, Y H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">No admin activity recorded yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

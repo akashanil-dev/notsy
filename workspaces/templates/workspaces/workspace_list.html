@@ -1,0 +1,145 @@
+{% extends 'notes/base.html' %}
+{% load static %}
+
+{% block title %}Workspaces — Notsy{% endblock %}
+{% block body_class %}app-page{% endblock %}
+
+{% block body %}
+<header class="topbar">
+    <div class="topbar-inner">
+        <a href="{% url 'dashboard' %}" class="topbar-brand" id="nav-brand-ws">
+            <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+                <rect width="36" height="36" rx="10" fill="#E8645A"/>
+                <path d="M10 11h16v2H10zm0 4h12v2H10zm0 4h14v2H10zm0 4h10v2H10z" fill="#fff"/>
+            </svg>
+            <span>notsy</span>
+        </a>
+        <nav class="topbar-nav">
+            <a href="{% url 'dashboard' %}" class="topbar-link" title="My Notes">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </a>
+            <button class="topbar-link" id="dark-mode-toggle" title="Toggle dark mode">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="dark-mode-icon-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="dark-mode-icon-sun" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </button>
+            <a href="{% url 'account_settings' %}" class="topbar-link" title="Settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </a>
+            <a href="{% url 'logout' %}" class="topbar-link" title="Log out">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </a>
+        </nav>
+    </div>
+</header>
+
+<main class="main-content">
+    <div class="ws-list-page">
+        <div class="ws-list-header">
+            <div>
+                <h1 class="settings-title" style="margin-bottom:4px;">Workspaces</h1>
+                <p class="ws-subtitle">Collaborate with your team on shared notes and tasks</p>
+            </div>
+            <button class="btn btn-primary" id="create-ws-btn" onclick="document.getElementById('create-ws-modal').classList.add('open')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New workspace
+            </button>
+        </div>
+
+        {% if owned_workspaces %}
+        <section class="ws-section">
+            <h2 class="section-label">Your Workspaces</h2>
+            <div class="ws-grid">
+                {% for ws in owned_workspaces %}
+                <a href="{% url 'workspace_detail' ws.pk %}" class="ws-card-link" id="ws-card-owned-{{ ws.pk }}">
+                    <div class="ws-card">
+                        <div class="ws-card-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+                        </div>
+                        <div class="ws-card-info">
+                            <span class="ws-card-name">{{ ws.name }}</span>
+                            {% if ws.description %}<span class="ws-card-desc">{{ ws.description|truncatechars:60 }}</span>{% endif %}
+                        </div>
+                        <div class="ws-card-meta">
+                            <span class="ws-role-badge ws-role-owner">Owner</span>
+                            <span class="ws-card-date">{{ ws.updated_at|date:"M d" }}</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if member_workspaces %}
+        <section class="ws-section">
+            <h2 class="section-label">Shared With Me</h2>
+            <div class="ws-grid">
+                {% for ws in member_workspaces %}
+                <a href="{% url 'workspace_detail' ws.pk %}" class="ws-card-link" id="ws-card-member-{{ ws.pk }}">
+                    <div class="ws-card">
+                        <div class="ws-card-icon ws-card-icon-shared">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <div class="ws-card-info">
+                            <span class="ws-card-name">{{ ws.name }}</span>
+                            <span class="ws-card-desc">by {{ ws.owner.username }}</span>
+                        </div>
+                        <div class="ws-card-meta">
+                            <span class="ws-role-badge ws-role-member">Member</span>
+                            <span class="ws-card-date">{{ ws.updated_at|date:"M d" }}</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if not owned_workspaces and not member_workspaces %}
+        <div class="empty-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+            <p>No workspaces yet</p>
+            <span>Create a workspace to start collaborating</span>
+        </div>
+        {% endif %}
+    </div>
+</main>
+
+<!-- Create Workspace Modal -->
+<div class="modal-overlay" id="create-ws-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 class="modal-title">New Workspace</h3>
+            <button class="modal-close" onclick="document.getElementById('create-ws-modal').classList.remove('open')" aria-label="Close">&times;</button>
+        </div>
+        <form method="post" action="{% url 'workspace_create' %}">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom:14px;">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" placeholder="e.g. Product Team" class="form-input" id="ws-name-input" maxlength="100" required>
+            </div>
+            <div class="form-group" style="margin-bottom:20px;">
+                <label class="form-label">Description <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+                <textarea name="description" placeholder="What is this workspace for?" class="form-textarea" id="ws-desc-input" rows="3"></textarea>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="submit" class="btn btn-primary" id="create-ws-submit">Create workspace</button>
+                <button type="button" class="btn" style="border:1px solid var(--border);color:var(--text-secondary);" onclick="document.getElementById('create-ws-modal').classList.remove('open')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Close modal on overlay click
+document.getElementById('create-ws-modal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+});
+// Focus input on open
+document.getElementById('create-ws-btn').addEventListener('click', function() {
+    setTimeout(() => document.getElementById('ws-name-input').focus(), 50);
+});
+</script>
+{% endblock %}

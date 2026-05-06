@@ -1,0 +1,384 @@
+{% extends 'notes/base.html' %}
+{% load static %}
+
+{% block title %}{{ workspace.name }} — Notsy{% endblock %}
+{% block body_class %}app-page{% endblock %}
+
+{% block body %}
+<header class="topbar">
+    <div class="topbar-inner">
+        <a href="{% url 'workspace_list' %}" class="topbar-brand" id="nav-brand-wsdetail">
+            <svg width="28" height="28" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="10" fill="#E8645A"/><path d="M10 11h16v2H10zm0 4h12v2H10zm0 4h14v2H10zm0 4h10v2H10z" fill="#fff"/></svg>
+            <span>notsy</span>
+        </a>
+        <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">
+            <a href="{% url 'workspace_list' %}" class="topbar-link" title="All workspaces">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+            </a>
+            <span style="color:var(--text-muted);font-size:0.8rem;">/</span>
+            <span style="font-size:0.95rem;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ workspace.name }}</span>
+            <span class="ws-role-badge ws-role-{{ role }}" style="margin-left:4px;">{{ role|capfirst }}</span>
+        </div>
+        <nav class="topbar-nav">
+            <button class="topbar-link" id="dark-mode-toggle" title="Toggle dark mode">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="dark-mode-icon-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="dark-mode-icon-sun" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
+            </button>
+            <a href="{% url 'dashboard' %}" class="topbar-link" title="My Notes">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </a>
+            <a href="{% url 'logout' %}" class="topbar-link" title="Log out">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </a>
+        </nav>
+    </div>
+</header>
+
+<main class="main-content" style="max-width:1100px;">
+    <div class="ws-detail-layout">
+
+        <!-- LEFT: Main content -->
+        <div class="ws-main-col">
+
+            <!-- Tasks -->
+            <section class="ws-panel">
+                <div class="ws-panel-header">
+                    <h2 class="ws-panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></polyline></svg>
+                        Tasks <span class="ws-count-badge">{{ tasks|length }}</span>
+                    </h2>
+                    {% if can_edit %}
+                    <button class="btn-ws-action" onclick="document.getElementById('add-task-modal').classList.add('open')" id="add-task-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add task
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="ws-task-list">
+                    {% for task in tasks %}
+                    <div class="ws-task-item {% if task.is_done %}ws-task-done{% endif %}" id="task-item-{{ task.pk }}">
+                        {% if can_edit %}
+                        <form method="post" action="{% url 'task_toggle' workspace.pk task.pk %}" class="inline-form">
+                            {% csrf_token %}
+                            <button type="submit" class="ws-task-check" title="Toggle complete" id="task-toggle-{{ task.pk }}">
+                                {% if task.is_done %}
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--coral)" stroke="none"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                {% else %}
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/></svg>
+                                {% endif %}
+                            </button>
+                        </form>
+                        {% else %}
+                        <span class="ws-task-check-view">{% if task.is_done %}<svg width="16" height="16" viewBox="0 0 24 24" fill="var(--coral)" stroke="none"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>{% else %}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/></svg>{% endif %}</span>
+                        {% endif %}
+                        <div class="ws-task-body">
+                            <span class="ws-task-title">{{ task.title }}</span>
+                            {% if task.description %}<span class="ws-task-desc">{{ task.description|truncatechars:80 }}</span>{% endif %}
+                            <div class="ws-task-meta">
+                                <span class="ws-priority ws-priority-{{ task.priority }}">{{ task.priority }}</span>
+                                {% if task.due_date %}<span class="ws-task-due">Due {{ task.due_date|date:"M d" }}</span>{% endif %}
+                                {% if task.assigned_to %}<span class="ws-task-assigned">@{{ task.assigned_to.username }}</span>{% endif %}
+                            </div>
+                        </div>
+                        {% if can_edit %}
+                        <form method="post" action="{% url 'task_delete' workspace.pk task.pk %}" class="inline-form" onsubmit="return confirm('Delete this task?')">
+                            {% csrf_token %}
+                            <button type="submit" class="ws-task-del" title="Delete task" id="task-del-{{ task.pk }}">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="ws-empty-inline">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        <span>No tasks yet{% if can_edit %} — add one above{% endif %}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Notes -->
+            <section class="ws-panel">
+                <div class="ws-panel-header">
+                    <h2 class="ws-panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        Shared Notes <span class="ws-count-badge">{{ notes|length }}</span>
+                    </h2>
+                    {% if can_edit %}
+                    <button class="btn-ws-action" onclick="document.getElementById('add-note-modal').classList.add('open')" id="add-note-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add note
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="ws-notes-list">
+                    {% for wn in notes %}
+                    <div class="ws-note-item">
+                        <a href="{% url 'note_edit' wn.note.pk %}" class="ws-note-link" id="ws-note-link-{{ wn.pk }}">
+                            <span class="ws-note-title">{{ wn.note.title|default:"Untitled" }}</span>
+                            {% if wn.note.preview %}<span class="ws-note-preview">{{ wn.note.preview|striptags|truncatechars:60 }}</span>{% endif %}
+                        </a>
+                        <div class="ws-note-meta">
+                            <span class="ws-note-by">by {{ wn.added_by.username }}</span>
+                            <span class="ws-note-date">{{ wn.added_at|date:"M d" }}</span>
+                            {% if can_edit %}
+                            <form method="post" action="{% url 'workspace_remove_note' workspace.pk wn.pk %}" class="inline-form">
+                                {% csrf_token %}
+                                <button type="submit" class="ws-task-del" title="Remove note" id="ws-note-del-{{ wn.pk }}">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="ws-empty-inline">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span>No notes shared yet{% if can_edit %} — add one from your notes{% endif %}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <!-- RIGHT: Sidebar -->
+        <aside class="ws-sidebar-col">
+
+            <!-- Members -->
+            <section class="ws-panel">
+                <div class="ws-panel-header">
+                    <h2 class="ws-panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Members
+                    </h2>
+                    {% if is_owner %}
+                    <button class="btn-ws-action" onclick="document.getElementById('invite-modal').classList.add('open')" id="invite-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Invite
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="ws-member-list">
+                    <!-- Owner -->
+                    <div class="ws-member-item">
+                        <div class="ws-avatar">{{ workspace.owner.username|first|upper }}</div>
+                        <div class="ws-member-info">
+                            <span class="ws-member-name">{{ workspace.owner.username }}</span>
+                            <span class="ws-role-badge ws-role-owner">Owner</span>
+                        </div>
+                    </div>
+                    {% for member in members %}
+                    <div class="ws-member-item" id="member-item-{{ member.pk }}">
+                        <div class="ws-avatar ws-avatar-member">{{ member.user.username|first|upper }}</div>
+                        <div class="ws-member-info">
+                            <span class="ws-member-name">{{ member.user.username }}</span>
+                            {% if is_owner %}
+                            <form method="post" action="{% url 'workspace_change_role' workspace.pk member.user.pk %}" class="inline-form">
+                                {% csrf_token %}
+                                <select name="role" class="ws-role-select" onchange="this.form.submit()" id="role-select-{{ member.pk }}">
+                                    <option value="editor" {% if member.role == 'editor' %}selected{% endif %}>Editor</option>
+                                    <option value="viewer" {% if member.role == 'viewer' %}selected{% endif %}>Viewer</option>
+                                </select>
+                            </form>
+                            {% else %}
+                            <span class="ws-role-badge ws-role-{{ member.role }}">{{ member.role|capfirst }}</span>
+                            {% endif %}
+                        </div>
+                        {% if is_owner %}
+                        <form method="post" action="{% url 'workspace_remove_member' workspace.pk member.user.pk %}" class="inline-form" onsubmit="return confirm('Remove {{ member.user.username }}?')">
+                            {% csrf_token %}
+                            <button type="submit" class="ws-task-del" title="Remove member" id="remove-member-{{ member.pk }}">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Activity -->
+            <section class="ws-panel">
+                <div class="ws-panel-header">
+                    <h2 class="ws-panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        Activity
+                    </h2>
+                </div>
+                <div class="ws-activity-list">
+                    {% for act in activities %}
+                    <div class="ws-activity-item">
+                        <div class="ws-avatar ws-avatar-sm">{{ act.user.username|first|upper }}</div>
+                        <div class="ws-activity-body">
+                            <span class="ws-activity-user">{{ act.user.username }}</span>
+                            <span class="ws-activity-action">{{ act.get_action_display|lower }}</span>
+                            {% if act.detail %}<span class="ws-activity-detail">{{ act.detail|truncatechars:30 }}</span>{% endif %}
+                            <span class="ws-activity-time">{{ act.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p style="font-size:0.8rem;color:var(--text-muted);padding:8px 0;">No activity yet.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Workspace Settings -->
+            {% if is_owner %}
+            <section class="ws-panel">
+                <div class="ws-panel-header">
+                    <h2 class="ws-panel-title">Settings</h2>
+                </div>
+                <button class="btn-ws-action" onclick="document.getElementById('edit-ws-modal').classList.add('open')" style="margin-bottom:8px;width:100%;justify-content:center;" id="edit-ws-btn">Edit workspace</button>
+                <form method="post" action="{% url 'workspace_delete' workspace.pk %}" onsubmit="return confirm('Delete this workspace? This cannot be undone.')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-ws-danger" style="width:100%;justify-content:center;" id="delete-ws-btn">Delete workspace</button>
+                </form>
+            </section>
+            {% else %}
+            <form method="post" action="{% url 'workspace_leave' workspace.pk %}" onsubmit="return confirm('Leave this workspace?')" style="margin-top:8px;">
+                {% csrf_token %}
+                <button type="submit" class="btn-ws-danger" style="width:100%;" id="leave-ws-btn">Leave workspace</button>
+            </form>
+            {% endif %}
+
+        </aside>
+    </div>
+</main>
+
+<!-- Add Task Modal -->
+<div class="modal-overlay" id="add-task-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 class="modal-title">New Task</h3>
+            <button class="modal-close" onclick="document.getElementById('add-task-modal').classList.remove('open')">&times;</button>
+        </div>
+        <form method="post" action="{% url 'task_create' workspace.pk %}">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom:12px;">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" placeholder="Task title" class="form-input" id="task-title-input" required>
+            </div>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label class="form-label">Description <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+                <textarea name="description" placeholder="Details..." class="form-textarea" rows="2" id="task-desc-input"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                <div class="form-group">
+                    <label class="form-label">Priority</label>
+                    <select name="priority" class="form-select" id="task-priority-input">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Due date</label>
+                    <input type="date" name="due_date" class="form-input" id="task-due-input">
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom:20px;">
+                <label class="form-label">Assign to</label>
+                <input type="text" name="assigned_to" placeholder="Username (optional)" class="form-input" id="task-assign-input">
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="submit" class="btn btn-primary" id="task-submit-btn">Create task</button>
+                <button type="button" class="btn" style="border:1px solid var(--border);color:var(--text-secondary);" onclick="document.getElementById('add-task-modal').classList.remove('open')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Note Modal -->
+<div class="modal-overlay" id="add-note-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 class="modal-title">Share a Note</h3>
+            <button class="modal-close" onclick="document.getElementById('add-note-modal').classList.remove('open')">&times;</button>
+        </div>
+        <form method="post" action="{% url 'workspace_add_note' workspace.pk %}">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom:20px;">
+                <label class="form-label">Select one of your notes</label>
+                <select name="note_id" class="form-select" id="add-note-select" required>
+                    <option value="">— choose a note —</option>
+                    {% for note in request.user.notes.all %}
+                    {% if not note.is_trashed and not note.is_archived %}
+                    <option value="{{ note.pk }}">{{ note.title|default:"Untitled" }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="submit" class="btn btn-primary" id="add-note-submit">Add to workspace</button>
+                <button type="button" class="btn" style="border:1px solid var(--border);color:var(--text-secondary);" onclick="document.getElementById('add-note-modal').classList.remove('open')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Invite Modal -->
+{% if is_owner %}
+<div class="modal-overlay" id="invite-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 class="modal-title">Invite Member</h3>
+            <button class="modal-close" onclick="document.getElementById('invite-modal').classList.remove('open')">&times;</button>
+        </div>
+        <form method="post" action="{% url 'workspace_invite' workspace.pk %}">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom:12px;">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" placeholder="Enter username" class="form-input" id="invite-username-input" required>
+            </div>
+            <div class="form-group" style="margin-bottom:20px;">
+                <label class="form-label">Role</label>
+                <select name="role" class="form-select" id="invite-role-input">
+                    <option value="viewer">Viewer — read only</option>
+                    <option value="editor">Editor — can create & edit</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="submit" class="btn btn-primary" id="invite-submit-btn">Send invite</button>
+                <button type="button" class="btn" style="border:1px solid var(--border);color:var(--text-secondary);" onclick="document.getElementById('invite-modal').classList.remove('open')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Edit Workspace Modal -->
+{% if is_owner %}
+<div class="modal-overlay" id="edit-ws-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 class="modal-title">Edit Workspace</h3>
+            <button class="modal-close" onclick="document.getElementById('edit-ws-modal').classList.remove('open')">&times;</button>
+        </div>
+        <form method="post" action="{% url 'workspace_edit' workspace.pk %}">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom:12px;">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" value="{{ workspace.name }}" class="form-input" id="edit-ws-name" required maxlength="100">
+            </div>
+            <div class="form-group" style="margin-bottom:20px;">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-textarea" rows="3" id="edit-ws-desc">{{ workspace.description }}</textarea>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="submit" class="btn btn-primary" id="edit-ws-submit">Save changes</button>
+                <button type="button" class="btn" style="border:1px solid var(--border);color:var(--text-secondary);" onclick="document.getElementById('edit-ws-modal').classList.remove('open')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.modal-overlay').forEach(function(el) {
+    el.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+});
+</script>
+{% endblock %}

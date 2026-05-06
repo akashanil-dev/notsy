@@ -1,0 +1,104 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% block title %}Users — Admin — Notsy{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <h1 class="admin-page-title">Users</h1>
+        <span class="admin-page-sub">{{ total }} user{{ total|pluralize }} found</span>
+    </div>
+</div>
+
+<div class="admin-panel">
+    <!-- Search + Filter Bar -->
+    <div class="admin-toolbar">
+        <form method="get" class="admin-search-form" id="user-search-form">
+            <div style="position:relative;">
+                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" name="q" value="{{ q }}" placeholder="Search users..." class="form-input" style="padding-left:36px;width:280px;" id="user-search-input" autocomplete="off">
+            </div>
+            <select name="filter" class="form-select" onchange="this.form.submit()" id="user-filter-select">
+                <option value="all" {% if filter_type == 'all' %}selected{% endif %}>All users</option>
+                <option value="active" {% if filter_type == 'active' %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if filter_type == 'inactive' %}selected{% endif %}>Inactive</option>
+                <option value="staff" {% if filter_type == 'staff' %}selected{% endif %}>Staff</option>
+            </select>
+        </form>
+    </div>
+
+    <!-- Users Table -->
+    <table class="admin-table admin-table-full">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Joined</th>
+                <th>Last Login</th>
+                <th>Notes</th>
+                <th>Workspaces</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for u in users %}
+        <tr id="user-row-{{ u.pk }}">
+            <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="ws-avatar ws-avatar-sm" style="background:var(--coral);color:#fff;font-size:0.75rem;flex-shrink:0;">{{ u.username|first|upper }}</div>
+                    <div>
+                        <a href="{% url 'admin_user_detail' u.pk %}" style="font-weight:600;display:block;" id="user-link-{{ u.pk }}">{{ u.username }}</a>
+                        {% if u.email %}<span style="font-size:0.77rem;color:var(--text-muted);">{{ u.email }}</span>{% endif %}
+                        {% if u.is_staff %}<span class="ws-role-badge ws-role-owner" style="margin-left:4px;font-size:0.65rem;">Staff</span>{% endif %}
+                    </div>
+                </div>
+            </td>
+            <td style="font-size:0.83rem;color:var(--text-secondary);">{{ u.date_joined|date:"M d, Y" }}</td>
+            <td style="font-size:0.83rem;color:var(--text-muted);">
+                {% if u.last_login %}{{ u.last_login|date:"M d, Y" }}{% else %}Never{% endif %}
+            </td>
+            <td><span class="ws-count-badge">{{ u.note_count }}</span></td>
+            <td><span class="ws-count-badge">{{ u.workspace_count }}</span></td>
+            <td>
+                {% if u.is_active %}
+                <span class="status-badge status-active">Active</span>
+                {% else %}
+                <span class="status-badge status-inactive">Inactive</span>
+                {% endif %}
+            </td>
+            <td>
+                <div style="display:flex;gap:6px;">
+                    <form method="post" action="{% url 'admin_user_toggle_active' u.pk %}" class="inline-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-admin-action" title="{% if u.is_active %}Deactivate{% else %}Activate{% endif %}" id="toggle-active-{{ u.pk }}">
+                            {% if u.is_active %}
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                            {% else %}
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+                            {% endif %}
+                        </button>
+                    </form>
+                    {% if not u == request.user %}
+                    <form method="post" action="{% url 'admin_user_toggle_staff' u.pk %}" class="inline-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-admin-action {% if u.is_staff %}btn-admin-active{% endif %}" title="{% if u.is_staff %}Revoke staff{% else %}Grant staff{% endif %}" id="toggle-staff-{{ u.pk }}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'admin_user_delete' u.pk %}" class="inline-form" onsubmit="return confirm('Delete user {{ u.username }}? All their data will be lost.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-admin-action btn-admin-danger" title="Delete user" id="delete-user-{{ u.pk }}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">No users found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

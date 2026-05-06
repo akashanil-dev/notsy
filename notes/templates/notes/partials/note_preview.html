@@ -1,0 +1,22 @@
+{% load note_extras %}
+{% if note.note_type == 'checklist' %}
+<ul class="note-checklist-preview">
+    {% for item in note.checklist_items.all|slice:":6" %}
+    <li class="{% if item.is_checked %}checked{% endif %}">
+        <span class="check-icon">
+            {% if item.is_checked %}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="4" fill="#E8645A" stroke="#E8645A"/><polyline points="9 12 11.5 14.5 16 9" stroke="#fff"/></svg>
+            {% else %}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/></svg>
+            {% endif %}
+        </span>
+        <span class="check-text" data-searchable>{{ item.text }}</span>
+    </li>
+    {% endfor %}
+    {% if note.checklist_items.count > 6 %}
+    <li class="more-items">+{{ note.checklist_items.count|add:"-6" }} more</li>
+    {% endif %}
+</ul>
+{% else %}
+<p class="note-card-content" data-searchable>{{ note.content|strip_html|truncatewords:40 }}</p>
+{% endif %}

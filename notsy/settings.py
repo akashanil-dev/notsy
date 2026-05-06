@@ -20,6 +20,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'notes',
+    'custom_admin',
+    'workspaces',
 ]
 
 MIDDLEWARE = [
@@ -53,8 +55,12 @@ WSGI_APPLICATION = 'notsy.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'notsy_db',
+        'USER': 'notsy_user',
+        'PASSWORD': 'notsy_password',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
     }
 }
 

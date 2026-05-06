@@ -1,0 +1,86 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% block title %}{{ target_user.username }} — Admin — Notsy{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <a href="{% url 'admin_user_list' %}" class="btn-ws-action" style="margin-bottom:0;" id="back-users-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Users
+    </a>
+    <div>
+        <h1 class="admin-page-title">{{ target_user.username }}</h1>
+        <span class="admin-page-sub">Joined {{ target_user.date_joined|date:"M d, Y" }}</span>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+    <div class="admin-panel">
+        <div class="admin-panel-header"><h2 class="admin-panel-title">Account Info</h2></div>
+        <div class="admin-info-grid">
+            <div class="admin-info-row"><span class="admin-info-label">Username</span><span class="admin-info-value">{{ target_user.username }}</span></div>
+            <div class="admin-info-row"><span class="admin-info-label">Email</span><span class="admin-info-value">{{ target_user.email|default:"—" }}</span></div>
+            <div class="admin-info-row"><span class="admin-info-label">Status</span><span class="admin-info-value">{% if target_user.is_active %}<span class="status-badge status-active">Active</span>{% else %}<span class="status-badge status-inactive">Inactive</span>{% endif %}</span></div>
+            <div class="admin-info-row"><span class="admin-info-label">Staff</span><span class="admin-info-value">{% if target_user.is_staff %}<span class="status-badge status-active">Yes</span>{% else %}No{% endif %}</span></div>
+            <div class="admin-info-row"><span class="admin-info-label">Superuser</span><span class="admin-info-value">{% if target_user.is_superuser %}Yes{% else %}No{% endif %}</span></div>
+            <div class="admin-info-row"><span class="admin-info-label">Last login</span><span class="admin-info-value">{% if target_user.last_login %}{{ target_user.last_login|date:"M d, Y H:i" }}{% else %}Never{% endif %}</span></div>
+        </div>
+        {% if not target_user == request.user %}
+        <div style="display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border-light);">
+            <form method="post" action="{% url 'admin_user_toggle_active' target_user.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn {% if target_user.is_active %}btn-danger{% else %}btn-primary{% endif %}" style="font-size:0.8rem;padding:8px 16px;" id="detail-toggle-active">
+                    {% if target_user.is_active %}Deactivate{% else %}Activate{% endif %}
+                </button>
+            </form>
+            <form method="post" action="{% url 'admin_user_delete' target_user.pk %}" onsubmit="return confirm('Delete {{ target_user.username }}? This cannot be undone.')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" style="font-size:0.8rem;padding:8px 16px;" id="detail-delete-user">Delete account</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="admin-panel">
+        <div class="admin-panel-header"><h2 class="admin-panel-title">Activity Stats</h2></div>
+        <div class="admin-stats-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="stat-card"><span class="stat-value">{{ target_user.notes.count }}</span><span class="stat-label">Total notes</span></div>
+            <div class="stat-card"><span class="stat-value">{{ workspaces_owned.count }}</span><span class="stat-label">Workspaces owned</span></div>
+            <div class="stat-card"><span class="stat-value">{{ memberships.count }}</span><span class="stat-label">Member of</span></div>
+            <div class="stat-card"><span class="stat-value">{{ target_user.tags.count }}</span><span class="stat-label">Tags</span></div>
+        </div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="admin-panel">
+        <div class="admin-panel-header"><h2 class="admin-panel-title">Recent Notes</h2></div>
+        {% for note in notes %}
+        <div class="ws-note-item">
+            <a href="{% url 'note_edit' note.pk %}" class="ws-note-link" id="admin-note-{{ note.pk }}">
+                <span class="ws-note-title">{{ note.title|default:"Untitled" }}</span>
+                <span class="ws-note-preview">{{ note.content|truncatechars:60 }}</span>
+            </a>
+            <div class="ws-note-meta">
+                <span class="ws-note-date">{{ note.updated_at|date:"M d" }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <p style="font-size:0.83rem;color:var(--text-muted);">No notes.</p>
+        {% endfor %}
+    </div>
+    <div class="admin-panel">
+        <div class="admin-panel-header"><h2 class="admin-panel-title">Workspace Memberships</h2></div>
+        {% for m in memberships %}
+        <div class="ws-member-item">
+            <div class="ws-member-info">
+                <a href="{% url 'workspace_detail' m.workspace.pk %}" style="font-weight:500;" id="admin-ws-link-{{ m.pk }}">{{ m.workspace.name }}</a>
+                <span class="ws-role-badge ws-role-{{ m.role }}">{{ m.role|capfirst }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <p style="font-size:0.83rem;color:var(--text-muted);">Not a member of any workspace.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

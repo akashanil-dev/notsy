@@ -2,6 +2,30 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class Tag(models.Model):
+    TAG_COLOR_CHOICES = [
+        ('coral', 'Coral'),
+        ('peach', 'Peach'),
+        ('sand', 'Sand'),
+        ('sage', 'Sage'),
+        ('fog', 'Fog'),
+        ('storm', 'Storm'),
+        ('dusk', 'Dusk'),
+        ('rose', 'Rose'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tags')
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=10, choices=TAG_COLOR_CHOICES, default='fog')
+
+    class Meta:
+        ordering = ['name']
+        unique_together = ['user', 'name']
+
+    def __str__(self):
+        return self.name
+
+
 class Note(models.Model):
     NOTE_TYPE_CHOICES = [
         ('text', 'Text'),
@@ -25,6 +49,11 @@ class Note(models.Model):
     note_type = models.CharField(max_length=10, choices=NOTE_TYPE_CHOICES, default='text')
     color = models.CharField(max_length=10, choices=COLOR_CHOICES, default='default')
     pinned = models.BooleanField(default=False)
+    tags = models.ManyToManyField(Tag, blank=True, related_name='notes')
+    is_trashed = models.BooleanField(default=False)
+    trashed_at = models.DateTimeField(null=True, blank=True)
+    is_archived = models.BooleanField(default=False)
+    preview = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

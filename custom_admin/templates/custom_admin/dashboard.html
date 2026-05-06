@@ -1,0 +1,226 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% block title %}Admin Dashboard — Notsy{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <h1 class="admin-page-title">Dashboard</h1>
+    <span class="admin-page-sub">Platform overview at a glance</span>
+</div>
+
+<!-- Stat Cards -->
+<div class="admin-stats-grid">
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon" style="background:rgba(232,100,90,0.12);color:var(--coral);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="admin-stat-body">
+            <span class="admin-stat-value">{{ total_users }}</span>
+            <span class="admin-stat-label">Total Users</span>
+        </div>
+        <div class="admin-stat-trend {% if new_users_week > 0 %}trend-up{% endif %}">
+            +{{ new_users_week }} this week
+        </div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon" style="background:rgba(90,142,232,0.12);color:#5a8ae8;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="admin-stat-body">
+            <span class="admin-stat-value">{{ total_notes }}</span>
+            <span class="admin-stat-label">Total Notes</span>
+        </div>
+        <div class="admin-stat-trend {% if new_notes_week > 0 %}trend-up{% endif %}">
+            +{{ new_notes_week }} this week
+        </div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon" style="background:rgba(90,174,90,0.12);color:#5aae5a;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div class="admin-stat-body">
+            <span class="admin-stat-value">{{ total_tasks }}</span>
+            <span class="admin-stat-label">Workspace Tasks</span>
+        </div>
+        <div class="admin-stat-trend">across all workspaces</div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon" style="background:rgba(184,90,192,0.12);color:#b85ac0;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <div class="admin-stat-body">
+            <span class="admin-stat-value">{{ total_workspaces }}</span>
+            <span class="admin-stat-label">Workspaces</span>
+        </div>
+        <div class="admin-stat-trend">{{ inactive_users }} inactive users</div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="admin-charts-row">
+    <div class="admin-panel" style="flex:1;">
+        <div class="admin-panel-header">
+            <h2 class="admin-panel-title">Notes Created (last 7 days)</h2>
+        </div>
+        <div class="chart-container">
+            <canvas id="notesChart" width="400" height="150"></canvas>
+        </div>
+    </div>
+    <div class="admin-panel" style="flex:1;">
+        <div class="admin-panel-header">
+            <h2 class="admin-panel-title">New Users (last 7 days)</h2>
+        </div>
+        <div class="chart-container">
+            <canvas id="usersChart" width="400" height="150"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Row -->
+<div class="admin-bottom-row">
+    <!-- Top Users -->
+    <div class="admin-panel" style="flex:1;">
+        <div class="admin-panel-header">
+            <h2 class="admin-panel-title">Most Active Users</h2>
+        </div>
+        <table class="admin-table">
+            <thead><tr><th>User</th><th>Notes</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for u in top_users %}
+            <tr>
+                <td>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="ws-avatar ws-avatar-sm" style="background:var(--coral);color:#fff;font-size:0.75rem;">{{ u.username|first|upper }}</div>
+                        <a href="{% url 'admin_user_detail' u.pk %}" style="font-weight:500;" id="top-user-{{ u.pk }}">{{ u.username }}</a>
+                    </div>
+                </td>
+                <td><span class="ws-count-badge">{{ u.note_count }}</span></td>
+                <td>
+                    {% if u.is_active %}<span class="status-badge status-active">Active</span>
+                    {% else %}<span class="status-badge status-inactive">Inactive</span>{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" style="color:var(--text-muted);font-size:0.87rem;">No data yet</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Recent Admin Logs -->
+    <div class="admin-panel" style="flex:1;">
+        <div class="admin-panel-header">
+            <h2 class="admin-panel-title">Recent Admin Actions</h2>
+            <a href="{% url 'admin_activity_logs' %}" class="btn-ws-action" id="view-all-logs">View all</a>
+        </div>
+        <div class="ws-activity-list">
+            {% for log in recent_logs %}
+            <div class="ws-activity-item">
+                <div class="ws-avatar ws-avatar-sm" style="background:var(--coral);color:#fff;font-size:0.7rem;">{{ log.admin.username|first|upper }}</div>
+                <div class="ws-activity-body">
+                    <span class="ws-activity-user">{{ log.admin.username }}</span>
+                    <span class="ws-activity-action">{{ log.action }}</span>
+                    {% if log.target %}<span class="ws-activity-detail">{{ log.target }}</span>{% endif %}
+                    <span class="ws-activity-time">{{ log.timestamp|timesince }} ago</span>
+                </div>
+            </div>
+            {% empty %}
+            <p style="font-size:0.8rem;color:var(--text-muted);padding:8px 0;">No admin activity yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const notesData = {{ notes_chart_json|safe }};
+const usersData = {{ users_chart_json|safe }};
+
+function drawBarChart(canvasId, data, color) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.offsetWidth || 400;
+    const H = 150;
+    canvas.width = W;
+    canvas.height = H;
+
+    const isDark = document.body.closest('[data-theme="dark"]') || document.documentElement.dataset.theme === 'dark';
+    const textColor = isDark ? '#a09c97' : '#a0a0a0';
+    const gridColor = isDark ? '#333' : '#f0f0f0';
+
+    const max = Math.max(...data.map(d => d.count), 1);
+    const pad = { top: 16, bottom: 32, left: 8, right: 8 };
+    const barW = (W - pad.left - pad.right) / data.length;
+    const chartH = H - pad.top - pad.bottom;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid lines
+    [0, 0.5, 1].forEach(frac => {
+        const y = pad.top + chartH * (1 - frac);
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(W - pad.right, y);
+        ctx.stroke();
+    });
+
+    // Bars
+    data.forEach((d, i) => {
+        const barH = (d.count / max) * chartH;
+        const x = pad.left + i * barW + barW * 0.15;
+        const y = pad.top + chartH - barH;
+        const w = barW * 0.7;
+
+        // Bar with rounded top
+        ctx.fillStyle = color + '33';
+        ctx.fillRect(x, y, w, barH);
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, w, Math.min(barH, 4));
+        // Full bar
+        ctx.fillStyle = color;
+        const radius = 4;
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + w - radius, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+        ctx.lineTo(x + w, y + barH);
+        ctx.lineTo(x, y + barH);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.85;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Label
+        ctx.fillStyle = textColor;
+        ctx.font = '10px DM Sans, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(d.date.split(' ')[1], x + w / 2, H - 4);
+
+        // Value on top
+        if (d.count > 0) {
+            ctx.fillStyle = color;
+            ctx.font = '600 10px DM Sans, sans-serif';
+            ctx.fillText(d.count, x + w / 2, y - 4);
+        }
+    });
+}
+
+function renderCharts() {
+    const coral = '#E8645A';
+    const fog = '#5a8ae8';
+    drawBarChart('notesChart', notesData, coral);
+    drawBarChart('usersChart', usersData, fog);
+}
+
+window.addEventListener('load', renderCharts);
+window.addEventListener('resize', renderCharts);
+document.addEventListener('themeChange', renderCharts);
+</script>
+{% endblock %}

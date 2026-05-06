@@ -1,10 +1,17 @@
 from django.contrib import admin
-from .models import Note, ChecklistItem
+from .models import Note, ChecklistItem, Tag
 
 
 class ChecklistItemInline(admin.TabularInline):
     model = ChecklistItem
     extra = 0
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'color')
+    list_filter = ('color',)
+    search_fields = ('name',)
 
 
 @admin.register(Note)

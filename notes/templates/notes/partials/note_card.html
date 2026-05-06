@@ -1,9 +1,9 @@
-{% load static %}
+{% load static note_extras %}
 <a href="{% url 'note_edit' note.pk %}" class="note-card-link" id="note-link-{{ note.pk }}">
 <article class="note-card note-color-{{ note.color }}" data-note-id="{{ note.pk }}" id="note-card-{{ note.pk }}">
     <div class="note-card-header">
         {% if note.title %}
-        <h3 class="note-card-title">{{ note.title }}</h3>
+        <h3 class="note-card-title" data-searchable>{{ note.title }}</h3>
         {% endif %}
         <button class="note-pin-btn {% if note.pinned %}pinned{% endif %}" data-id="{{ note.pk }}" title="{% if note.pinned %}Unpin{% else %}Pin{% endif %}" id="pin-btn-{{ note.pk }}" onclick="event.preventDefault(); event.stopPropagation();">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="{% if note.pinned %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 2h6l-1 7h4l-7 8V9H7l2-7z"/></svg>
@@ -11,28 +11,17 @@
     </div>
 
     <div class="note-card-body">
-        {% if note.note_type == 'checklist' %}
-        <ul class="note-checklist-preview">
-            {% for item in note.checklist_items.all|slice:":6" %}
-            <li class="{% if item.is_checked %}checked{% endif %}">
-                <span class="check-icon">
-                    {% if item.is_checked %}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="4" fill="#E8645A" stroke="#E8645A"/><polyline points="9 12 11.5 14.5 16 9" stroke="#fff"/></svg>
-                    {% else %}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/></svg>
-                    {% endif %}
-                </span>
-                <span class="check-text">{{ item.text }}</span>
-            </li>
-            {% endfor %}
-            {% if note.checklist_items.count > 6 %}
-            <li class="more-items">+{{ note.checklist_items.count|add:"-6" }} more</li>
-            {% endif %}
-        </ul>
-        {% else %}
-        <p class="note-card-content">{{ note.content|truncatewords:40 }}</p>
-        {% endif %}
+        {{ note.preview|safe }}
     </div>
+
+    <!-- Tags row -->
+    {% if note.tags.all %}
+    <div class="note-card-tags">
+        {% for tag in note.tags.all %}
+        <span class="note-tag tag-color-{{ tag.color }}">{{ tag.name }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <div class="note-card-footer" onclick="event.preventDefault(); event.stopPropagation();">
         <span class="note-card-date">{{ note.updated_at|timesince }} ago</span>
@@ -52,12 +41,33 @@
                     <button class="color-dot color-dusk" data-color="dusk" data-id="{{ note.pk }}" title="Dusk"></button>
                 </div>
             </div>
-            <form method="post" action="{% url 'note_delete' note.pk %}" class="inline-form" onsubmit="return confirm('Delete this note?')">
+            {% if note.is_trashed %}
+            <form method="post" action="{% url 'note_restore' note.pk %}" class="inline-form">
                 {% csrf_token %}
-                <button type="submit" class="note-action-btn note-action-delete" title="Delete" id="delete-btn-{{ note.pk }}">
+                <button type="submit" class="note-action-btn note-action-restore" title="Restore" id="restore-btn-{{ note.pk }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                </button>
+            </form>
+            <form method="post" action="{% url 'note_delete' note.pk %}" class="inline-form" onsubmit="return confirm('Permanently delete this note?')">
+                {% csrf_token %}
+                <button type="submit" class="note-action-btn note-action-delete" title="Delete Permanently" id="delete-btn-{{ note.pk }}">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
             </form>
+            {% else %}
+            <form method="post" action="{% url 'note_archive' note.pk %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="note-action-btn note-action-archive" title="{% if note.is_archived %}Unarchive{% else %}Archive{% endif %}" id="archive-btn-{{ note.pk }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                </button>
+            </form>
+            <form method="post" action="{% url 'note_delete' note.pk %}" class="inline-form" onsubmit="return confirm('Move this note to trash?')">
+                {% csrf_token %}
+                <button type="submit" class="note-action-btn note-action-delete" title="Move to Trash" id="delete-btn-{{ note.pk }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+            </form>
+            {% endif %}
         </div>
     </div>
 </article>

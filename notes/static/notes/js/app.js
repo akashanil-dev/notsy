@@ -1,8 +1,39 @@
 /* ═════════════════════════════════════════════════
    Notsy — App JavaScript
+   Features: formatting, auto-links, tags, search
+   highlighting, dark mode
    ═════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // ── Dark mode ─────────────────────────────────
+    const themeKey = 'notsy-theme';
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem(themeKey, theme);
+
+        // Update toggle icon visibility
+        document.querySelectorAll('.dark-mode-icon-moon').forEach(el => {
+            el.style.display = theme === 'dark' ? 'none' : 'block';
+        });
+        document.querySelectorAll('.dark-mode-icon-sun').forEach(el => {
+            el.style.display = theme === 'dark' ? 'block' : 'none';
+        });
+    }
+
+    // Load saved theme or default to light
+    const savedTheme = localStorage.getItem(themeKey) || 'light';
+    applyTheme(savedTheme);
+
+    document.querySelectorAll('#dark-mode-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const current = document.documentElement.getAttribute('data-theme');
+            applyTheme(current === 'dark' ? 'light' : 'dark');
+        });
+    });
+
 
     // ── Auto-dismiss toasts ────────────────────────
     document.querySelectorAll('.toast').forEach(toast => {
@@ -94,6 +125,152 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
+    // ── Rich text editor (contenteditable) ─────────
+    const richEditor = document.getElementById('rich-content');
+    const contentTextarea = document.getElementById('note-content');
+    const formattingToolbar = document.getElementById('formatting-toolbar');
+
+    if (richEditor && contentTextarea) {
+        // Load existing content into contenteditable
+        // Content is already loaded from the template
+
+        // Sync contenteditable back to textarea on form submit
+        const noteForm = document.getElementById('note-form');
+        if (noteForm) {
+            noteForm.addEventListener('submit', () => {
+                contentTextarea.value = richEditor.innerHTML;
+            });
+        }
+
+        // Formatting buttons
+        if (formattingToolbar) {
+            formattingToolbar.querySelectorAll('.fmt-btn[data-cmd]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const cmd = btn.dataset.cmd;
+                    richEditor.focus();
+                    document.execCommand(cmd, false, null);
+                    updateToolbarState();
+                });
+            });
+        }
+
+        // Keyboard shortcuts for formatting
+        richEditor.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key.toLowerCase()) {
+                    case 'b':
+                        e.preventDefault();
+                        document.execCommand('bold', false, null);
+                        updateToolbarState();
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        document.execCommand('italic', false, null);
+                        updateToolbarState();
+                        break;
+                    case 'u':
+                        e.preventDefault();
+                        document.execCommand('underline', false, null);
+                        updateToolbarState();
+                        break;
+                }
+            }
+        });
+
+        // Update toolbar state on selection changes
+        document.addEventListener('selectionchange', () => {
+            if (document.activeElement === richEditor) {
+                updateToolbarState();
+            }
+        });
+
+        // Auto-link detection on input
+        richEditor.addEventListener('input', () => {
+            autoLinkDetection(richEditor);
+        });
+
+        // Also run auto-link on paste
+        richEditor.addEventListener('paste', (e) => {
+            // Allow default paste, then process links after a tick
+            setTimeout(() => {
+                autoLinkDetection(richEditor);
+            }, 50);
+        });
+    }
+
+    function updateToolbarState() {
+        if (!formattingToolbar) return;
+        const commands = ['bold', 'italic', 'underline'];
+        commands.forEach(cmd => {
+            const btn = formattingToolbar.querySelector(`[data-cmd="${cmd}"]`);
+            if (btn) {
+                btn.classList.toggle('active', document.queryCommandState(cmd));
+            }
+        });
+    }
+
+
+    // ── Auto-link detection ────────────────────────
+    function autoLinkDetection(editor) {
+        // Walk all text nodes and find URLs not already inside <a>
+        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+        const urlRegex = /(https?:\/\/[^\s<>]+)/g;
+        const textNodes = [];
+
+        while (walker.nextNode()) {
+            textNodes.push(walker.currentNode);
+        }
+
+        textNodes.forEach(node => {
+            if (node.parentElement && node.parentElement.tagName === 'A') return;
+            const text = node.textContent;
+            if (!urlRegex.test(text)) return;
+
+            // Save cursor position
+            const selection = window.getSelection();
+            const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+            let cursorOffset = null;
+            let cursorInThisNode = false;
+
+            if (range && range.startContainer === node) {
+                cursorOffset = range.startOffset;
+                cursorInThisNode = true;
+            }
+
+            urlRegex.lastIndex = 0;
+            const fragment = document.createDocumentFragment();
+            let lastIndex = 0;
+            let match;
+
+            while ((match = urlRegex.exec(text)) !== null) {
+                // Text before the URL
+                if (match.index > lastIndex) {
+                    fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+                }
+                // The URL as a link
+                const link = document.createElement('a');
+                link.href = match[1];
+                link.textContent = match[1];
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                fragment.appendChild(link);
+
+                lastIndex = match.index + match[0].length;
+            }
+
+            // Remaining text after last URL
+            if (lastIndex < text.length) {
+                fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+            }
+
+            if (lastIndex > 0) {
+                node.parentNode.replaceChild(fragment, node);
+            }
+        });
+    }
+
+
     // ── Editor: Mode toggle (text ↔ checklist) ─────
     const noteTypeInput = document.getElementById('id_note_type');
     const modeToggleBtn = document.getElementById('mode-toggle-btn');
@@ -101,7 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modeToggleIcon = document.getElementById('mode-toggle-icon');
     const textEditor = document.getElementById('text-editor');
     const checklistEditor = document.getElementById('checklist-editor');
-    const contentTextarea = document.getElementById('note-content');
 
     let currentMode = window.INITIAL_NOTE_TYPE || 'text';
     let checklistItems = window.CHECKLIST_INITIAL || [];
@@ -116,11 +292,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentMode === 'text') {
             if (textEditor) textEditor.style.display = '';
             if (checklistEditor) checklistEditor.style.display = 'none';
+            if (formattingToolbar) formattingToolbar.style.display = '';
             modeToggleLabel.textContent = 'Convert to list';
             modeToggleIcon.innerHTML = listIcon;
         } else {
             if (textEditor) textEditor.style.display = 'none';
             if (checklistEditor) checklistEditor.style.display = '';
+            if (formattingToolbar) formattingToolbar.style.display = 'none';
             modeToggleLabel.textContent = 'Convert to text';
             modeToggleIcon.innerHTML = textIcon;
         }
@@ -134,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modeToggleBtn.addEventListener('click', () => {
             if (currentMode === 'text') {
                 // Convert text → checklist
-                const text = contentTextarea ? contentTextarea.value : '';
+                const text = richEditor ? richEditor.innerText : (contentTextarea ? contentTextarea.value : '');
                 const lines = text.split('\n').filter(l => l.trim() !== '');
                 checklistItems = lines.map((line, i) => ({
                     text: line.trim(),
@@ -153,6 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     .filter(item => item.text.trim() !== '')
                     .map(item => item.text)
                     .join('\n');
+                if (richEditor) richEditor.innerText = text;
                 if (contentTextarea) contentTextarea.value = text;
                 currentMode = 'text';
                 updateModeUI();
@@ -174,6 +353,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 colorInput.value = dot.dataset.color;
             });
         });
+    }
+
+
+    // ── Tag picker ─────────────────────────────────
+    const noteTagIds = window.NOTE_TAG_IDS || [];
+    // Pre-check tags that are already assigned
+    noteTagIds.forEach(id => {
+        const chip = document.getElementById(`tag-pick-${id}`);
+        if (chip) {
+            const checkbox = chip.querySelector('input[type="checkbox"]');
+            if (checkbox) checkbox.checked = true;
+        }
+    });
+
+    // Create new tag
+    const addTagBtn = document.getElementById('add-tag-btn');
+    if (addTagBtn) {
+        addTagBtn.addEventListener('click', async () => {
+            const nameInput = document.getElementById('new-tag-name');
+            const colorSelect = document.getElementById('new-tag-color');
+            const name = nameInput.value.trim();
+            const color = colorSelect.value;
+
+            if (!name) return;
+
+            try {
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('color', color);
+
+                const res = await fetch('/tags/create/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCSRF() },
+                    body: formData,
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    // Add the new tag chip
+                    const tagsContainer = document.getElementById('tag-picker-tags');
+                    const chip = document.createElement('label');
+                    chip.className = `tag-picker-chip tag-color-${data.color}`;
+                    chip.id = `tag-pick-${data.id}`;
+                    chip.innerHTML = `<input type="checkbox" name="note_tags" value="${data.id}" checked><span>${data.name}</span>`;
+                    tagsContainer.appendChild(chip);
+                    nameInput.value = '';
+                } else {
+                    const err = await res.json();
+                    alert(err.error || 'Failed to create tag.');
+                }
+            } catch (err) {
+                console.error('Tag creation failed:', err);
+            }
+        });
+
+        // Handle Enter key in tag name input
+        const nameInput = document.getElementById('new-tag-name');
+        if (nameInput) {
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTagBtn.click();
+                }
+            });
+        }
     }
 
 
@@ -310,14 +554,133 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    // ── Search highlighting ────────────────────────
+    const searchQuery = getSearchQuery();
+    if (searchQuery && searchQuery.length > 0) {
+        document.querySelectorAll('[data-searchable]').forEach(el => {
+            highlightText(el, searchQuery);
+        });
+    }
+
+    function getSearchQuery() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('q') || '';
+    }
+
+    function highlightText(element, query) {
+        if (!query || query.length < 1) return;
+
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+        const textNodes = [];
+        while (walker.nextNode()) {
+            textNodes.push(walker.currentNode);
+        }
+
+        const queryLower = query.toLowerCase();
+
+        textNodes.forEach(node => {
+            const text = node.textContent;
+            const textLower = text.toLowerCase();
+            const index = textLower.indexOf(queryLower);
+            if (index === -1) return;
+
+            const fragment = document.createDocumentFragment();
+            let lastIdx = 0;
+
+            let searchIdx = 0;
+            let currentIdx = textLower.indexOf(queryLower, searchIdx);
+
+            while (currentIdx !== -1) {
+                // Text before match
+                if (currentIdx > lastIdx) {
+                    fragment.appendChild(document.createTextNode(text.substring(lastIdx, currentIdx)));
+                }
+
+                // Highlighted match
+                const mark = document.createElement('mark');
+                mark.className = 'search-highlight';
+                mark.textContent = text.substring(currentIdx, currentIdx + query.length);
+                fragment.appendChild(mark);
+
+                lastIdx = currentIdx + query.length;
+                searchIdx = lastIdx;
+                currentIdx = textLower.indexOf(queryLower, searchIdx);
+            }
+
+            // Remaining text
+            if (lastIdx < text.length) {
+                fragment.appendChild(document.createTextNode(text.substring(lastIdx)));
+            }
+
+            node.parentNode.replaceChild(fragment, node);
+        });
+    }
+
+
     // ── Keyboard shortcut: Ctrl+S to save ──────────
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             const form = document.getElementById('note-form');
-            if (form) form.submit();
+            if (form) {
+                // Sync rich editor content before submit
+                if (richEditor && contentTextarea) {
+                    contentTextarea.value = richEditor.innerHTML;
+                }
+                form.submit();
+            }
         }
     });
+
+
+    // ── Auto-link detection for note cards (read-only) ─
+    document.querySelectorAll('.note-card-content').forEach(el => {
+        linkifyElement(el);
+    });
+
+    function linkifyElement(element) {
+        const urlRegex = /(https?:\/\/[^\s<>]+)/g;
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+        const textNodes = [];
+        while (walker.nextNode()) {
+            textNodes.push(walker.currentNode);
+        }
+
+        textNodes.forEach(node => {
+            if (node.parentElement && node.parentElement.tagName === 'A') return;
+            const text = node.textContent;
+            if (!urlRegex.test(text)) return;
+
+            urlRegex.lastIndex = 0;
+            const fragment = document.createDocumentFragment();
+            let lastIndex = 0;
+            let match;
+
+            while ((match = urlRegex.exec(text)) !== null) {
+                if (match.index > lastIndex) {
+                    fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+                }
+                const link = document.createElement('a');
+                link.href = match[1];
+                link.textContent = match[1];
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.style.color = 'var(--coral)';
+                link.style.textDecoration = 'underline';
+                link.onclick = (e) => e.stopPropagation();
+                fragment.appendChild(link);
+                lastIndex = match.index + match[0].length;
+            }
+
+            if (lastIndex < text.length) {
+                fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+            }
+
+            if (lastIndex > 0) {
+                node.parentNode.replaceChild(fragment, node);
+            }
+        });
+    }
 
 
     // ── Utility ────────────────────────────────────

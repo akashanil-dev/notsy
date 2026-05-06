@@ -5,85 +5,97 @@
 {% block body_class %}app-page{% endblock %}
 
 {% block body %}
-<header class="topbar">
+<header class="topbar minimalist-topbar">
     <div class="topbar-inner">
-        <a href="{% url 'dashboard' %}" class="topbar-brand" id="nav-brand-form">
-            <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
-                <rect width="36" height="36" rx="10" fill="#E8645A"/>
-                <path d="M10 11h16v2H10zm0 4h12v2H10zm0 4h14v2H10zm0 4h10v2H10z" fill="#fff"/>
-            </svg>
-            <span>notsy</span>
+        <a href="{% url 'dashboard' %}" class="topbar-link" id="nav-back" title="Back to notes">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         </a>
-        <div class="topbar-nav">
-            <a href="{% url 'dashboard' %}" class="topbar-link" id="nav-back" title="Back to notes">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            </a>
+        <div class="autosave-indicator" id="autosave-status">Saved</div>
+        <div class="topbar-nav contextual-actions">
+            <!-- Dark mode toggle -->
+            <button class="topbar-link" id="dark-mode-toggle" title="Toggle dark mode">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="dark-mode-icon-moon">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="dark-mode-icon-sun" style="display:none">
+                    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+            </button>
+            <button type="button" class="topbar-link mode-toggle-btn" id="mode-toggle-btn" title="Toggle Checklist">
+                <span class="mode-toggle-icon" id="mode-toggle-icon"></span>
+            </button>
+            <div class="color-picker-wrap">
+                <button type="button" class="topbar-link color-trigger" title="Change color">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                </button>
+                <div class="color-picker-dropdown editor-color-picker" id="color-picker-dropdown">
+                    <button type="button" class="color-dot color-default editor-color-dot" data-color="default" title="Default"></button>
+                    <button type="button" class="color-dot color-coral editor-color-dot" data-color="coral" title="Coral"></button>
+                    <button type="button" class="color-dot color-peach editor-color-dot" data-color="peach" title="Peach"></button>
+                    <button type="button" class="color-dot color-sand editor-color-dot" data-color="sand" title="Sand"></button>
+                    <button type="button" class="color-dot color-sage editor-color-dot" data-color="sage" title="Sage"></button>
+                    <button type="button" class="color-dot color-fog editor-color-dot" data-color="fog" title="Fog"></button>
+                    <button type="button" class="color-dot color-storm editor-color-dot" data-color="storm" title="Storm"></button>
+                    <button type="button" class="color-dot color-dusk editor-color-dot" data-color="dusk" title="Dusk"></button>
+                </div>
+            </div>
         </div>
     </div>
 </header>
 
-<main class="main-content">
-    <div class="note-editor">
-        <form method="post" id="note-form">
+<main class="main-content minimalist-main">
+    <div class="note-editor minimalist-editor">
+        <form method="post" id="note-form" action="{% if is_edit %}{% url 'note_edit' note.pk %}{% else %}{% url 'note_create' %}{% endif %}">
             {% csrf_token %}
-
             {{ form.note_type }}
             {{ form.color }}
 
-            <div class="editor-header">
+            <!-- Formatting toolbar (hidden unless text selected) -->
+            <div class="formatting-toolbar minimalist-toolbar" id="formatting-toolbar">
+                <button type="button" class="fmt-btn" data-cmd="bold" title="Bold (Ctrl+B)">B</button>
+                <button type="button" class="fmt-btn" data-cmd="italic" title="Italic (Ctrl+I)">I</button>
+                <button type="button" class="fmt-btn" data-cmd="underline" title="Underline (Ctrl+U)">U</button>
+                <button type="button" class="fmt-btn" data-cmd="removeFormat" title="Clear">✕</button>
+            </div>
+
+            <div class="editor-header minimalist-header">
                 <div class="editor-title-row">
                     {{ form.title }}
-                    <label class="pin-toggle" title="Pin note">
-                        {{ form.pinned }}
-                        <svg class="pin-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 2h6l-1 7h4l-7 8V9H7l2-7z"/></svg>
-                    </label>
                 </div>
             </div>
 
             <!-- Text mode -->
             <div class="editor-body" id="text-editor" style="{% if form.initial.note_type == 'checklist' or form.instance.note_type == 'checklist' %}display:none{% endif %}">
-                {{ form.content }}
+                <div class="rich-editor minimalist-rich-editor" contenteditable="true" id="rich-content" data-placeholder="Start typing...">{{ form.instance.content|safe }}</div>
+                <div style="display:none">{{ form.content }}</div>
             </div>
 
             <!-- Checklist mode -->
             <div class="editor-body checklist-editor" id="checklist-editor" style="{% if form.initial.note_type != 'checklist' and form.instance.note_type != 'checklist' %}display:none{% endif %}">
-                <div class="checklist-items" id="checklist-items">
-                    <!-- Items injected by JS -->
-                </div>
+                <div class="checklist-items minimalist-checklist" id="checklist-items"></div>
                 <div class="checklist-add-row">
-                    <button type="button" class="checklist-add-btn" id="checklist-add-btn">
+                    <button type="button" class="checklist-add-btn minimalist-add-btn" id="checklist-add-btn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        <span>Add item</span>
+                        <span>List item</span>
                     </button>
                 </div>
                 <input type="hidden" name="checklist_items" id="checklist-items-json" value="[]">
             </div>
 
-            <!-- Editor footer -->
-            <div class="editor-footer">
-                <div class="editor-footer-left">
-                    <button type="button" class="mode-toggle-btn" id="mode-toggle-btn" title="Convert between text and checklist">
-                        <span class="mode-toggle-icon" id="mode-toggle-icon">
-                            <!-- Icon changes based on mode -->
-                        </span>
-                        <span id="mode-toggle-label">Convert to list</span>
-                    </button>
-
-                    <div class="editor-color-picker">
-                        <button type="button" class="color-dot color-default editor-color-dot" data-color="default" title="Default"></button>
-                        <button type="button" class="color-dot color-coral editor-color-dot" data-color="coral" title="Coral"></button>
-                        <button type="button" class="color-dot color-peach editor-color-dot" data-color="peach" title="Peach"></button>
-                        <button type="button" class="color-dot color-sand editor-color-dot" data-color="sand" title="Sand"></button>
-                        <button type="button" class="color-dot color-sage editor-color-dot" data-color="sage" title="Sage"></button>
-                        <button type="button" class="color-dot color-fog editor-color-dot" data-color="fog" title="Fog"></button>
-                        <button type="button" class="color-dot color-storm editor-color-dot" data-color="storm" title="Storm"></button>
-                        <button type="button" class="color-dot color-dusk editor-color-dot" data-color="dusk" title="Dusk"></button>
-                    </div>
+            <!-- Contextual Tags -->
+            <div class="minimalist-tags-container">
+                <div class="tag-chips" id="active-tags-container">
+                    <!-- populated via JS -->
                 </div>
-                <button type="submit" class="btn btn-primary" id="note-save-btn">
-                    {% if is_edit %}Save changes{% else %}Create note{% endif %}
-                </button>
+                <input type="text" class="minimalist-tag-input" id="minimalist-tag-input" placeholder="#tag..." autocomplete="off">
             </div>
+            
+            <div style="display:none" id="hidden-tags-container">
+                {% for tag in user_tags %}
+                    <label id="tag-pick-{{ tag.pk }}"><input type="checkbox" name="note_tags" value="{{ tag.pk }}" data-name="{{ tag.name }}" data-color="{{ tag.color }}"></label>
+                {% endfor %}
+            </div>
+
         </form>
     </div>
 </main>
@@ -93,5 +105,174 @@
 <script>
     window.INITIAL_NOTE_TYPE = '{{ form.instance.note_type|default:"text" }}';
     window.CHECKLIST_INITIAL = {{ checklist_items_json|default:"[]"|safe }};
+    window.NOTE_TAG_IDS = {{ note_tag_ids|default:"[]"|safe }};
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const editor = document.getElementById('rich-content');
+        const toolbar = document.getElementById('formatting-toolbar');
+        
+        document.addEventListener('selectionchange', () => {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0 && !selection.isCollapsed && editor && editor.contains(selection.anchorNode)) {
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                toolbar.style.top = `${rect.top - toolbar.offsetHeight - 10}px`;
+                toolbar.style.left = `${rect.left + rect.width / 2}px`;
+                toolbar.classList.add('active');
+            } else {
+                if(toolbar) toolbar.classList.remove('active');
+            }
+        });
+
+        // Autosave logic
+        const form = document.getElementById('note-form');
+        const status = document.getElementById('autosave-status');
+        let saveTimeout;
+
+        function triggerAutosave() {
+            clearTimeout(saveTimeout);
+            if(status) {
+                status.textContent = 'Saving...';
+                status.classList.add('visible');
+            }
+            saveTimeout = setTimeout(async () => {
+                const contentInput = document.querySelector('input[name="content"], textarea[name="content"]');
+                if (contentInput && editor) {
+                    contentInput.value = editor.innerHTML;
+                }
+                
+                // We don't have updateJSON exported from app.js but we can grab the checklist input
+                const checklistInput = document.getElementById('checklist-items-json');
+                const itemsContainer = document.getElementById('checklist-items');
+                if(itemsContainer && checklistInput) {
+                    const items = [];
+                    itemsContainer.querySelectorAll('.checklist-item').forEach((el, i) => {
+                        const cb = el.querySelector('input[type="checkbox"]');
+                        const txt = el.querySelector('input[type="text"]');
+                        if(txt && txt.value) {
+                            items.push({text: txt.value, is_checked: cb ? cb.checked : false, order: i});
+                        }
+                    });
+                    checklistInput.value = JSON.stringify(items);
+                }
+
+                const formData = new FormData(form);
+                try {
+                    const res = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.id && data.edit_url) {
+                            form.action = data.edit_url;
+                            window.history.replaceState(null, '', data.edit_url);
+                        }
+                        if(status) {
+                            status.textContent = 'Saved';
+                            setTimeout(() => status.classList.remove('visible'), 2000);
+                        }
+                    }
+                } catch(e) {
+                    if(status) status.textContent = 'Error';
+                }
+            }, 800);
+        }
+
+        if(form) form.addEventListener('input', triggerAutosave);
+        if(editor) editor.addEventListener('input', triggerAutosave);
+        
+        // Checklist items trigger autosave via event delegation
+        document.addEventListener('input', (e) => {
+            if(e.target.closest('#checklist-items')) triggerAutosave();
+        });
+        document.addEventListener('change', (e) => {
+            if(e.target.closest('#checklist-items')) triggerAutosave();
+        });
+        document.addEventListener('click', (e) => {
+            if(e.target.closest('.editor-color-dot')) triggerAutosave();
+            if(e.target.closest('.checklist-item-remove')) setTimeout(triggerAutosave, 50);
+        });
+
+        // Auto convert to checklist
+        if (editor) {
+            editor.addEventListener('input', (e) => {
+                const text = editor.innerText;
+                if (text.trim() === '-' || text.trim() === '- ') {
+                    const modeBtn = document.getElementById('mode-toggle-btn');
+                    if(modeBtn) {
+                        editor.innerText = '';
+                        modeBtn.click();
+                        setTimeout(() => {
+                           const firstInput = document.querySelector('.checklist-items input[type="text"]');
+                           if(firstInput) firstInput.focus();
+                        }, 50);
+                    }
+                }
+            });
+        }
+
+        // Contextual Tags
+        const tagInput = document.getElementById('minimalist-tag-input');
+        const activeContainer = document.getElementById('active-tags-container');
+        const hiddenContainer = document.getElementById('hidden-tags-container');
+
+        function renderTags() {
+            if(!activeContainer) return;
+            activeContainer.innerHTML = '';
+            hiddenContainer.querySelectorAll('input:checked').forEach(cb => {
+                const span = document.createElement('span');
+                span.className = `tag-chip-selected tag-color-${cb.dataset.color}`;
+                span.innerHTML = `#${cb.dataset.name} &times;`;
+                span.onclick = () => {
+                    cb.checked = false;
+                    renderTags();
+                    triggerAutosave();
+                };
+                activeContainer.appendChild(span);
+            });
+        }
+
+        if(tagInput) {
+            tagInput.addEventListener('keydown', async (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const name = tagInput.value.trim().replace(/^#/, '');
+                    if (!name) return;
+                    
+                    let found = Array.from(hiddenContainer.querySelectorAll('input')).find(cb => cb.dataset.name.toLowerCase() === name.toLowerCase());
+                    
+                    if (found) {
+                        found.checked = true;
+                        tagInput.value = '';
+                        renderTags();
+                        triggerAutosave();
+                    } else {
+                        const formData = new FormData();
+                        formData.append('name', name);
+                        formData.append('color', 'fog');
+                        const res = await fetch('/tags/create/', {
+                            method: 'POST',
+                            headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+                            body: formData,
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            const label = document.createElement('label');
+                            label.innerHTML = `<input type="checkbox" name="note_tags" value="${data.id}" data-name="${data.name}" data-color="${data.color}" checked>`;
+                            hiddenContainer.appendChild(label);
+                            tagInput.value = '';
+                            renderTags();
+                            triggerAutosave();
+                        }
+                    }
+                }
+            });
+        }
+        renderTags();
+    });
 </script>
 {% endblock %}
