@@ -8,7 +8,7 @@
 <!-- Top nav -->
 <header class="topbar">
     <div class="topbar-inner">
-        <button class="topbar-link menu-toggle-btn" id="sidebar-toggle-btn" title="Main menu" style="margin-right: 8px; border:none; background:none; cursor:pointer;">
+        <button type="button" class="topbar-link menu-toggle-btn" id="sidebar-toggle-btn" title="Main menu" style="margin-right: 8px; border:none; background:none; cursor:pointer;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -247,16 +247,17 @@
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Sidebar toggle
-        const sidebarToggle = document.getElementById('sidebar-toggle-btn');
-        const sidebar = document.getElementById('sidebar');
-        if (sidebarToggle && sidebar) {
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-            });
-        }
+    // Sidebar toggle (run immediately as script is at end of body)
+    const sidebarToggle = document.getElementById('sidebar-toggle-btn');
+    const sidebar = document.getElementById('sidebar');
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            sidebar.classList.toggle('collapsed');
+        });
+    }
 
+    document.addEventListener('DOMContentLoaded', () => {
         // ── Element refs ──────────────────────────────────
         const wrapper = document.getElementById('inline-creator-wrapper');
         const collapsed = document.getElementById('inline-creator-collapsed');
