@@ -293,14 +293,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (textEditor) textEditor.style.display = '';
             if (checklistEditor) checklistEditor.style.display = 'none';
             if (formattingToolbar) formattingToolbar.style.display = '';
-            modeToggleLabel.textContent = 'Convert to list';
-            modeToggleIcon.innerHTML = listIcon;
+            if (modeToggleLabel) modeToggleLabel.textContent = 'To-do list';
+            if (modeToggleIcon) modeToggleIcon.innerHTML = listIcon;
+            modeToggleBtn.classList.remove('mode-active');
         } else {
             if (textEditor) textEditor.style.display = 'none';
             if (checklistEditor) checklistEditor.style.display = '';
             if (formattingToolbar) formattingToolbar.style.display = 'none';
-            modeToggleLabel.textContent = 'Convert to text';
-            modeToggleIcon.innerHTML = textIcon;
+            if (modeToggleLabel) modeToggleLabel.textContent = 'Text mode';
+            if (modeToggleIcon) modeToggleIcon.innerHTML = textIcon;
+            modeToggleBtn.classList.add('mode-active');
         }
 
         if (noteTypeInput) noteTypeInput.value = currentMode;
@@ -442,12 +444,23 @@ document.addEventListener('DOMContentLoaded', () => {
         div.draggable = true;
         div.dataset.index = index;
 
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = item.is_checked;
-        checkbox.addEventListener('change', () => {
-            checklistItems[index].is_checked = checkbox.checked;
-            textInput.classList.toggle('checked-text', checkbox.checked);
+        // Custom SVG checkbox button
+        const checkBtn = document.createElement('button');
+        checkBtn.type = 'button';
+        checkBtn.className = 'checklist-custom-check' + (item.is_checked ? ' is-checked' : '');
+        checkBtn.setAttribute('aria-label', item.is_checked ? 'Uncheck item' : 'Check item');
+        checkBtn.innerHTML = item.is_checked
+            ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" fill="var(--coral)" stroke="var(--coral)"/><polyline points="7 12 10.5 15.5 17 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+            : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="var(--border-strong, #bbb)" stroke-width="1.8"/></svg>`;
+
+        checkBtn.addEventListener('click', () => {
+            checklistItems[index].is_checked = !checklistItems[index].is_checked;
+            textInput.classList.toggle('checked-text', checklistItems[index].is_checked);
+            // Update icon
+            checkBtn.className = 'checklist-custom-check' + (checklistItems[index].is_checked ? ' is-checked' : '');
+            checkBtn.innerHTML = checklistItems[index].is_checked
+                ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" fill="var(--coral)" stroke="var(--coral)"/><polyline points="7 12 10.5 15.5 17 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+                : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="var(--border-strong, #bbb)" stroke-width="1.8"/></svg>`;
             updateJSON();
         });
 
@@ -496,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderChecklist();
         });
 
-        div.appendChild(checkbox);
+        div.appendChild(checkBtn);
         div.appendChild(textInput);
         div.appendChild(removeBtn);
 

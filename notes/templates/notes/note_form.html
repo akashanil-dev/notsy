@@ -23,6 +23,7 @@
             </button>
             <button type="button" class="topbar-link mode-toggle-btn" id="mode-toggle-btn" title="Toggle Checklist">
                 <span class="mode-toggle-icon" id="mode-toggle-icon"></span>
+                <span class="mode-toggle-label" id="mode-toggle-label"></span>
             </button>
             <div class="color-picker-wrap">
                 <button type="button" class="topbar-link color-trigger" title="Change color">
@@ -75,8 +76,8 @@
                 <div class="checklist-items minimalist-checklist" id="checklist-items"></div>
                 <div class="checklist-add-row">
                     <button type="button" class="checklist-add-btn minimalist-add-btn" id="checklist-add-btn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        <span>List item</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>Add item</span>
                     </button>
                 </div>
                 <input type="hidden" name="checklist_items" id="checklist-items-json" value="[]">
@@ -141,20 +142,8 @@
                     contentInput.value = editor.innerHTML;
                 }
                 
-                // We don't have updateJSON exported from app.js but we can grab the checklist input
-                const checklistInput = document.getElementById('checklist-items-json');
-                const itemsContainer = document.getElementById('checklist-items');
-                if(itemsContainer && checklistInput) {
-                    const items = [];
-                    itemsContainer.querySelectorAll('.checklist-item').forEach((el, i) => {
-                        const cb = el.querySelector('input[type="checkbox"]');
-                        const txt = el.querySelector('input[type="text"]');
-                        if(txt && txt.value) {
-                            items.push({text: txt.value, is_checked: cb ? cb.checked : false, order: i});
-                        }
-                    });
-                    checklistInput.value = JSON.stringify(items);
-                }
+                // The checklist-items-json hidden field is kept in sync by app.js updateJSON()
+                // No need to re-read the DOM here — just include the hidden field in formData
 
                 const formData = new FormData(form);
                 try {

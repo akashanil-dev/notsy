@@ -270,7 +270,7 @@
             expanded.style.display = 'flex';
             if (!isChecklistMode) contentInput.focus();
             else {
-                const first = checklistBox.querySelector('input[type="text"]');
+                const first = checklistBox.querySelector('.inline-item-text');
                 if (first) first.focus();
             }
         }
@@ -292,29 +292,31 @@
             checklistBox.innerHTML = '';
             checklistItems.forEach((item, index) => {
                 const row = document.createElement('div');
-                row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:4px 0;';
+                row.className = 'checklist-row';
 
-                const cb = document.createElement('input');
-                cb.type = 'checkbox';
-                cb.checked = item.is_checked;
-                // Override global CSS that sets width:100% on inputs
-                cb.style.cssText = 'width:16px!important;height:16px!important;min-width:16px;flex-shrink:0;accent-color:var(--coral);cursor:pointer;border:none!important;padding:0!important;background:none!important;';
+                // Custom SVG checkbox
+                const checkBtn = document.createElement('button');
+                checkBtn.type = 'button';
+                checkBtn.className = 'inline-check-btn' + (item.is_checked ? ' is-checked' : '');
+                checkBtn.innerHTML = item.is_checked
+                    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" fill="var(--coral)" stroke="var(--coral)"/><polyline points="7 12 10.5 15.5 17 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+                    : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="var(--border-strong, #bbb)" stroke-width="1.8"/></svg>`;
 
                 const txt = document.createElement('input');
                 txt.type = 'text';
                 txt.value = item.text;
                 txt.placeholder = 'List item...';
-                txt.style.cssText = 'flex:1;min-width:0;border:none!important;border-bottom:1px solid var(--border-light)!important;background:transparent!important;outline:none!important;box-shadow:none!important;padding:2px 0!important;font-size:0.95rem;font-family:var(--font);color:var(--text-primary);line-height:1.5;';
-                if (item.is_checked) {
-                    txt.style.textDecoration = 'line-through';
-                    txt.style.color = 'var(--text-muted)';
-                }
+                txt.className = 'inline-item-text' + (item.is_checked ? ' is-checked-text' : '');
 
-                // Checkbox change → update state + style
-                cb.addEventListener('change', () => {
-                    checklistItems[index].is_checked = cb.checked;
-                    txt.style.textDecoration = cb.checked ? 'line-through' : 'none';
-                    txt.style.color = cb.checked ? 'var(--text-muted)' : 'var(--text-primary)';
+                // Checkbox toggle
+                checkBtn.addEventListener('click', () => {
+                    checklistItems[index].is_checked = !checklistItems[index].is_checked;
+                    const checked = checklistItems[index].is_checked;
+                    checkBtn.className = 'inline-check-btn' + (checked ? ' is-checked' : '');
+                    checkBtn.innerHTML = checked
+                        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" fill="var(--coral)" stroke="var(--coral)"/><polyline points="7 12 10.5 15.5 17 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+                        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="var(--border-strong, #bbb)" stroke-width="1.8"/></svg>`;
+                    txt.className = 'inline-item-text' + (checked ? ' is-checked-text' : '');
                 });
 
                 // Text change → update state
@@ -329,7 +331,7 @@
                         checklistItems.splice(index + 1, 0, { text: '', is_checked: false });
                         renderChecklist();
                         setTimeout(() => {
-                            const inputs = checklistBox.querySelectorAll('input[type="text"]');
+                            const inputs = checklistBox.querySelectorAll('.inline-item-text');
                             if (inputs[index + 1]) inputs[index + 1].focus();
                         }, 10);
                     }
@@ -338,14 +340,14 @@
                         checklistItems.splice(index, 1);
                         renderChecklist();
                         setTimeout(() => {
-                            const inputs = checklistBox.querySelectorAll('input[type="text"]');
+                            const inputs = checklistBox.querySelectorAll('.inline-item-text');
                             const prev = inputs[Math.max(0, index - 1)];
                             if (prev) prev.focus();
                         }, 10);
                     }
                 });
 
-                row.appendChild(cb);
+                row.appendChild(checkBtn);
                 row.appendChild(txt);
                 checklistBox.appendChild(row);
             });
@@ -373,18 +375,18 @@
                 contentInput.innerHTML = '';
                 checklistBox.style.display = 'flex';
                 checklistBox.style.flexDirection = 'column';
-                checklistBox.style.gap = '0';
+                checklistBox.style.gap = '2px';
                 checklistBox.style.padding = '4px 16px 12px';
 
                 renderChecklist();
 
-                // Highlight button
-                modeBtn.style.color = 'var(--coral)';
+                // Highlight button with CSS class
+                modeBtn.classList.add('checklist-active');
                 modeBtn.title = 'Switch to text';
 
                 // Focus first text input
                 setTimeout(() => {
-                    const first = checklistBox.querySelector('input[type="text"]');
+                    const first = checklistBox.querySelector('.inline-item-text');
                     if (first) first.focus();
                 }, 20);
 
@@ -406,7 +408,7 @@
                 }
                 contentInput.focus();
 
-                modeBtn.style.color = 'var(--text-muted)';
+                modeBtn.classList.remove('checklist-active');
                 modeBtn.title = 'Show checkboxes';
             }
         });
@@ -425,7 +427,7 @@
             pinnedInput.value = 'false';
             pinBtn.style.color = 'var(--text-muted)';
             pinBtn.querySelector('svg').setAttribute('fill', 'none');
-            modeBtn.style.color = 'var(--text-muted)';
+            modeBtn.classList.remove('checklist-active');
             modeBtn.title = 'Show checkboxes';
             wrapper.className = 'inline-creator-wrapper note-color-default';
         }
