@@ -39,6 +39,7 @@ class Workspace(models.Model):
 
 class WorkspaceMember(models.Model):
     ROLE_CHOICES = [
+        ('owner', 'Owner'),
         ('editor', 'Editor'),
         ('viewer', 'Viewer'),
     ]

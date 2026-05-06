@@ -86,95 +86,59 @@
 <main class="main-content">
     <!-- Create bar + Tag filters -->
     <!-- Inline Note Creator -->
-    <div class="inline-creator-wrapper note-color-default" id="inline-creator-wrapper">
-        <div class="inline-creator-collapsed" id="inline-creator-collapsed">
-            <span>Take a note...</span>
-        </div>
-        <form class="inline-creator-expanded" id="inline-creator-expanded" style="display: none;" method="post"
-            action="{% url 'note_create' %}">
-            <button type="button" class="inline-pin-btn" id="inline-pin-btn" title="Pin note"
-                style="position: absolute; right: 12px; top: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 17v5" />
-                    <path d="M9 2h6l-1 7h4l-7 8V9H7l2-7z" />
-                </svg>
-            </button>
-            {% csrf_token %}
-            <input type="hidden" name="note_type" value="text" id="inline-type-input">
-            <input type="hidden" name="color" value="default" id="inline-color-input">
-            <input type="hidden" name="pinned" value="false" id="inline-pinned-input">
+    <div class="inline-creator-outer">
+        <div class="inline-creator-wrapper note-color-default" id="inline-creator-wrapper">
+            <div class="inline-creator-collapsed" id="inline-creator-collapsed">
+                <span>Take a note...</span>
+            </div>
+            <form class="inline-creator-expanded" id="inline-creator-expanded" style="display: none;" method="post"
+                action="{% url 'note_create' %}">
+                <button type="button" class="inline-pin-btn" id="inline-pin-btn" title="Pin note"
+                    style="position: absolute; right: 12px; top: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 17v5" />
+                        <path d="M9 2h6l-1 7h4l-7 8V9H7l2-7z" />
+                    </svg>
+                </button>
+                {% csrf_token %}
+                <input type="hidden" name="note_type" value="text" id="inline-type-input">
+                <input type="hidden" name="color" value="default" id="inline-color-input">
+                <input type="hidden" name="pinned" value="false" id="inline-pinned-input">
 
-            <input type="text" name="title" placeholder="Title" class="inline-title-input" id="inline-title-input"
-                autocomplete="off" style="padding-right: 40px;">
-            <div class="inline-content-input rich-editor" id="inline-content-input" contenteditable="true"
-                data-placeholder="Take a note..."></div>
-            <!-- Inline checklist container (shown instead of rich editor in checklist mode) -->
-            <div id="inline-checklist-container"
-                style="display:none; padding: 0 16px 8px 16px; flex-direction: column; gap: 4px;"
-                aria-label="Checklist items"></div>
-            <textarea name="content" id="inline-hidden-content" style="display: none;"></textarea>
+                <input type="text" name="title" placeholder="Title" class="inline-title-input" id="inline-title-input"
+                    autocomplete="off" style="padding-right: 40px;">
+                <div class="inline-content-input rich-editor" id="inline-content-input" contenteditable="true"
+                    data-placeholder="Take a note..."></div>
 
-            <div class="inline-creator-footer">
-                <div class="inline-actions" style="display: flex; gap: 4px;">
-                    <!-- Checkbox Mode -->
-                    <button type="button" class="icon-btn" title="Show checkboxes" id="inline-mode-toggle"
-                        style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="9 11 12 14 22 4" />
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                        </svg>
-                    </button>
-                    <!-- Color Picker -->
-                    <div class="color-picker-wrap" style="display: flex; align-items: center;">
-                        <button type="button" class="icon-btn color-trigger" title="Background options"
+                <div class="inline-creator-footer">
+                    <div class="inline-actions" style="display: flex; gap: 4px;">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <!-- Undo -->
+                        <button type="button" class="icon-btn" title="Undo" onclick="document.execCommand('undo')"
                             style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding: 8px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <path
-                                    d="M12 2a10 10 0 0 0-10 10c0 5.5 4.5 10 10 10 5.5 0 10-4.5 10-10A10 10 0 0 0 12 2z" />
-                                <path d="M12 8v4" />
-                                <path d="M12 16h.01" />
+                                <path d="M3 7v6h6" />
+                                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" />
                             </svg>
                         </button>
-                        <div class="color-picker-dropdown" id="inline-color-picker">
-                            <button type="button" class="color-dot color-default" data-color="default"></button>
-                            <button type="button" class="color-dot color-coral" data-color="coral"></button>
-                            <button type="button" class="color-dot color-peach" data-color="peach"></button>
-                            <button type="button" class="color-dot color-sand" data-color="sand"></button>
-                            <button type="button" class="color-dot color-sage" data-color="sage"></button>
-                            <button type="button" class="color-dot color-fog" data-color="fog"></button>
-                            <button type="button" class="color-dot color-storm" data-color="storm"></button>
-                            <button type="button" class="color-dot color-dusk" data-color="dusk"></button>
-                        </div>
+                        <!-- Redo -->
+                        <button type="button" class="icon-btn" title="Redo" onclick="document.execCommand('redo')"
+                            style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 7v6h-6" />
+                                <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7" />
+                            </svg>
+                        </button>
+                        <button type="button" class="inline-close-btn" id="inline-close-btn"
+                            style="background:none; border:none; color:var(--text-primary); font-weight:500; cursor:pointer;">Close</button>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 4px;">
-                    <!-- Undo -->
-                    <button type="button" class="icon-btn" title="Undo" onclick="document.execCommand('undo')"
-                        style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 7v6h6" />
-                            <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" />
-                        </svg>
-                    </button>
-                    <!-- Redo -->
-                    <button type="button" class="icon-btn" title="Redo" onclick="document.execCommand('redo')"
-                        style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 7v6h-6" />
-                            <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7" />
-                        </svg>
-                    </button>
-                    <button type="button" class="inline-close-btn" id="inline-close-btn"
-                        style="background:none; border:none; color:var(--text-primary); font-weight:500; cursor:pointer;">Close</button>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
     <!-- Tag filters -->
@@ -250,32 +214,35 @@
         const expanded = document.getElementById('inline-creator-expanded');
         const titleInput = document.getElementById('inline-title-input');
         const contentInput = document.getElementById('inline-content-input');
-        const checklistBox = document.getElementById('inline-checklist-container');
         const closeBtn = document.getElementById('inline-close-btn');
         const colorInput = document.getElementById('inline-color-input');
         const typeInput = document.getElementById('inline-type-input');
         const pinnedInput = document.getElementById('inline-pinned-input');
         const pinBtn = document.getElementById('inline-pin-btn');
-        const modeBtn = document.getElementById('inline-mode-toggle');
 
         if (!wrapper) return;
-
-        // ── State ─────────────────────────────────────────
-        let checklistItems = [];  // [{text, is_checked}]
-        let isChecklistMode = false;
 
         // ── Expand / collapse ─────────────────────────────
         function expand() {
             collapsed.style.display = 'none';
             expanded.style.display = 'flex';
-            if (!isChecklistMode) contentInput.focus();
-            else {
-                const first = checklistBox.querySelector('.inline-item-text');
-                if (first) first.focus();
-            }
+            contentInput.focus();
         }
 
         collapsed.addEventListener('click', expand);
+
+        // ── 'n' key shortcut to open creator ─────────────
+        document.addEventListener('keydown', (e) => {
+            // Ignore if focused on an input/textarea/contenteditable
+            const tag = document.activeElement.tagName;
+            const isEditing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' ||
+                              document.activeElement.isContentEditable;
+            if (isEditing) return;
+            if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                e.preventDefault();
+                expand();
+            }
+        });
 
         // ── Pin toggle ────────────────────────────────────
         pinBtn.addEventListener('click', (e) => {
@@ -287,169 +254,26 @@
             pinBtn.querySelector('svg').setAttribute('fill', pinned ? 'none' : 'currentColor');
         });
 
-        // ── Checklist rendering ───────────────────────────
-        function renderChecklist() {
-            checklistBox.innerHTML = '';
-            checklistItems.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className = 'checklist-row';
-
-                // Custom SVG checkbox
-                const checkBtn = document.createElement('button');
-                checkBtn.type = 'button';
-                checkBtn.className = 'inline-check-btn' + (item.is_checked ? ' is-checked' : '');
-                checkBtn.innerHTML = item.is_checked
-                    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" fill="var(--coral)" stroke="var(--coral)"/><polyline points="7 12 10.5 15.5 17 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-                    : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="var(--border-strong, #bbb)" stroke-width="1.8"/></svg>`;
-
-                const txt = document.createElement('input');
-                txt.type = 'text';
-                txt.value = item.text;
-                txt.placeholder = 'List item...';
-                txt.className = 'inline-item-text' + (item.is_checked ? ' is-checked-text' : '');
-
-                // Checkbox toggle
-                checkBtn.addEventListener('click', () => {
-                    checklistItems[index].is_checked = !checklistItems[index].is_checked;
-                    const checked = checklistItems[index].is_checked;
-                    checkBtn.className = 'inline-check-btn' + (checked ? ' is-checked' : '');
-                    checkBtn.innerHTML = checked
-                        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" fill="var(--coral)" stroke="var(--coral)"/><polyline points="7 12 10.5 15.5 17 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-                        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="var(--border-strong, #bbb)" stroke-width="1.8"/></svg>`;
-                    txt.className = 'inline-item-text' + (checked ? ' is-checked-text' : '');
-                });
-
-                // Text change → update state
-                txt.addEventListener('input', () => {
-                    checklistItems[index].text = txt.value;
-                });
-
-                // Enter → new item; Backspace on empty → remove
-                txt.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        checklistItems.splice(index + 1, 0, { text: '', is_checked: false });
-                        renderChecklist();
-                        setTimeout(() => {
-                            const inputs = checklistBox.querySelectorAll('.inline-item-text');
-                            if (inputs[index + 1]) inputs[index + 1].focus();
-                        }, 10);
-                    }
-                    if (e.key === 'Backspace' && txt.value === '' && checklistItems.length > 1) {
-                        e.preventDefault();
-                        checklistItems.splice(index, 1);
-                        renderChecklist();
-                        setTimeout(() => {
-                            const inputs = checklistBox.querySelectorAll('.inline-item-text');
-                            const prev = inputs[Math.max(0, index - 1)];
-                            if (prev) prev.focus();
-                        }, 10);
-                    }
-                });
-
-                row.appendChild(checkBtn);
-                row.appendChild(txt);
-                checklistBox.appendChild(row);
-            });
-        }
-
-        // ── Mode toggle ───────────────────────────────────
-        modeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();   // prevent bubbling to document close handler
-
-            if (!isChecklistMode) {
-                // ── Switch to CHECKLIST mode ──
-                isChecklistMode = true;
-                typeInput.value = 'checklist';
-
-                // Grab any text already typed
-                const rawText = contentInput.innerText.trim();
-                const lines = rawText ? rawText.split('\n').filter(l => l.trim()) : [];
-                checklistItems = lines.length > 0
-                    ? lines.map(l => ({ text: l.trim(), is_checked: false }))
-                    : [{ text: '', is_checked: false }];
-
-                // Hide rich editor, show checklist box
-                contentInput.style.display = 'none';
-                contentInput.innerHTML = '';
-                checklistBox.style.display = 'flex';
-                checklistBox.style.flexDirection = 'column';
-                checklistBox.style.gap = '2px';
-                checklistBox.style.padding = '4px 16px 12px';
-
-                renderChecklist();
-
-                // Highlight button with CSS class
-                modeBtn.classList.add('checklist-active');
-                modeBtn.title = 'Switch to text';
-
-                // Focus first text input
-                setTimeout(() => {
-                    const first = checklistBox.querySelector('.inline-item-text');
-                    if (first) first.focus();
-                }, 20);
-
-            } else {
-                // ── Switch BACK to text mode ──
-                isChecklistMode = false;
-                typeInput.value = 'text';
-
-                // Convert items back to plain text
-                const text = checklistItems.filter(i => i.text.trim()).map(i => i.text).join('\n');
-                checklistItems = [];
-
-                checklistBox.style.display = 'none';
-                checklistBox.innerHTML = '';
-
-                contentInput.style.display = '';
-                if (text) {
-                    contentInput.innerHTML = text.split('\n').map(l => `<div>${l}</div>`).join('');
-                }
-                contentInput.focus();
-
-                modeBtn.classList.remove('checklist-active');
-                modeBtn.title = 'Show checkboxes';
-            }
-        });
-
         // ── Reset all state ───────────────────────────────
         function resetCreator() {
-            isChecklistMode = false;
-            checklistItems = [];
             titleInput.value = '';
             contentInput.innerHTML = '';
-            contentInput.style.display = '';
-            checklistBox.style.display = 'none';
-            checklistBox.innerHTML = '';
             colorInput.value = 'default';
             typeInput.value = 'text';
             pinnedInput.value = 'false';
             pinBtn.style.color = 'var(--text-muted)';
             pinBtn.querySelector('svg').setAttribute('fill', 'none');
-            modeBtn.classList.remove('checklist-active');
-            modeBtn.title = 'Show checkboxes';
             wrapper.className = 'inline-creator-wrapper note-color-default';
         }
 
         // ── Save & close ──────────────────────────────────
         async function closeAndSave() {
             const title = titleInput.value.trim();
-            const hasChecklist = isChecklistMode && checklistItems.some(i => i.text.trim());
-            const hasText = !isChecklistMode && contentInput.innerText.trim();
+            const hasText = contentInput.innerText.trim();
 
-            if (title || hasChecklist || hasText) {
+            if (title || hasText) {
                 const formData = new FormData(expanded);
-
-                if (isChecklistMode) {
-                    const items = checklistItems
-                        .filter(i => i.text.trim())
-                        .map((i, idx) => ({ text: i.text.trim(), is_checked: i.is_checked, order: idx }));
-                    formData.append('checklist_items', JSON.stringify(items));
-                    formData.set('content', '');
-                } else {
-                    formData.set('content', contentInput.innerHTML);
-                }
+                formData.set('content', contentInput.innerHTML);
 
                 // Collapse immediately (optimistic)
                 resetCreator();
@@ -488,26 +312,77 @@
 
         closeBtn.addEventListener('click', closeAndSave);
 
-        // Close on outside click (but not on checklist inputs or modeBtn)
+        // Close on outside click
         document.addEventListener('click', (e) => {
             if (expanded.style.display !== 'flex') return;
             if (wrapper.contains(e.target)) return;
             if (e.target.closest('#formatting-toolbar')) return;
             closeAndSave();
         });
-
-        // ── Color picker ──────────────────────────────────
-        expanded.querySelectorAll('.color-dot').forEach(dot => {
-            dot.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const color = dot.dataset.color;
-                colorInput.value = color;
-                wrapper.className = wrapper.className.replace(/note-color-\w+/g, '').trim();
-                wrapper.classList.add(`note-color-${color}`);
-                dot.closest('.color-picker-dropdown').classList.remove('show');
-            });
-        });
     });
+
+    // ── Command Palette (Ctrl+K) ──────────────────────────
+    (function() {
+        const palette = document.getElementById('cmd-palette');
+        const paletteInput = document.getElementById('cmd-palette-input');
+        const paletteClose = document.getElementById('cmd-palette-close');
+        if (!palette) return;
+
+        function openPalette() {
+            palette.classList.add('open');
+            paletteInput.value = '';
+            paletteInput.focus();
+        }
+        function closePalette() {
+            palette.classList.remove('open');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                if (palette.classList.contains('open')) {
+                    closePalette();
+                } else {
+                    openPalette();
+                }
+            }
+            if (e.key === 'Escape') closePalette();
+        });
+
+        paletteClose && paletteClose.addEventListener('click', closePalette);
+        palette.addEventListener('click', (e) => {
+            if (e.target === palette) closePalette();
+        });
+
+        // On Enter, submit search
+        paletteInput && paletteInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const q = paletteInput.value.trim();
+                closePalette();
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.value = q;
+                    document.getElementById('search-form').submit();
+                }
+            }
+        });
+    })();
 </script>
+
+<!-- Command Palette -->
+<div class="cmd-palette-overlay" id="cmd-palette">
+    <div class="cmd-palette-box">
+        <div class="cmd-palette-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);flex-shrink:0">
+                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" id="cmd-palette-input" placeholder="Search notes..." autocomplete="off" spellcheck="false">
+            <button id="cmd-palette-close" title="Close (Esc)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="cmd-palette-hint">Type to search your notes &bull; Press <kbd>Enter</kbd> to go &bull; <kbd>Esc</kbd> to close</div>
+    </div>
+</div>
 {% endblock %}
 {% endblock %}

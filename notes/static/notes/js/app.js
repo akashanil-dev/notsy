@@ -313,11 +313,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modeToggleBtn.addEventListener('click', () => {
             if (currentMode === 'text') {
-                // Convert text → checklist
-                const text = richEditor ? richEditor.innerText : (contentTextarea ? contentTextarea.value : '');
-                const lines = text.split('\n').filter(l => l.trim() !== '');
+                // Capture content robustly BEFORE any DOM changes
+                const savedHTML = richEditor ? richEditor.innerHTML : '';
+                const savedText = richEditor
+                    ? (richEditor.textContent || richEditor.innerText || '')
+                    : (contentTextarea ? contentTextarea.value : '');
+
+                // Parse lines from HTML (handles <div>, <br>, plain text)
+                function extractLines(html, fallbackText) {
+                    if (!html.trim()) return [];
+                    const tmp = document.createElement('div');
+                    tmp.innerHTML = html;
+                    tmp.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+                    const blocks = tmp.querySelectorAll('div, p');
+                    if (blocks.length > 0) {
+                        return Array.from(blocks).map(b => b.textContent.trim()).filter(Boolean);
+                    }
+                    return fallbackText.split('\n').map(l => l.trim()).filter(Boolean);
+                }
+
+                const lines = extractLines(savedHTML, savedText);
                 checklistItems = lines.map((line, i) => ({
-                    text: line.trim(),
+                    text: line,
                     is_checked: false,
                     order: i,
                 }));

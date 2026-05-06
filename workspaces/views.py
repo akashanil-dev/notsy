@@ -128,7 +128,7 @@ def workspace_invite(request, pk):
     workspace = get_object_or_404(Workspace, pk=pk, owner=request.user)
     username = request.POST.get('username', '').strip()
     role = request.POST.get('role', 'viewer')
-    if role not in ('editor', 'viewer'):
+    if role not in ('owner', 'editor', 'viewer'):
         role = 'viewer'
 
     try:
@@ -182,7 +182,7 @@ def workspace_change_role(request, pk, user_pk):
     workspace = get_object_or_404(Workspace, pk=pk, owner=request.user)
     member = get_object_or_404(WorkspaceMember, workspace=workspace, user_id=user_pk)
     new_role = request.POST.get('role', 'viewer')
-    if new_role in ('editor', 'viewer'):
+    if new_role in ('owner', 'editor', 'viewer'):
         member.role = new_role
         member.save()
         messages.success(request, f'Role updated to {new_role}.')

@@ -2374,13 +2374,14 @@ mark.search-highlight {
 /* Inline Note Creator (Keep-style) */
 .inline-creator-wrapper {
     max-width: 600px;
-    margin: 20px auto 40px auto;
+    margin: 0;
     position: relative;
     border-radius: 8px;
     box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15);
     background: var(--bg-primary);
     border: 1px solid transparent;
     transition: box-shadow 0.2s;
+    width: 100%;
 }
 [data-theme="dark"] .inline-creator-wrapper {
     background: var(--bg-secondary);
@@ -2636,3 +2637,172 @@ mark.search-highlight {
     background: var(--coral-lighter);
     border-radius: 6px;
 }
+
+/* ── Inline creator outer centering wrapper ─────── */
+.inline-creator-outer {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 32px;
+}
+
+.inline-creator-outer .inline-creator-wrapper {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px 0 0 0;
+}
+
+/* ── Command Palette ─────────────────────────────── */
+.cmd-palette-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 18vh;
+}
+.cmd-palette-overlay.open {
+    display: flex;
+    animation: cmdFadeIn 0.15s ease;
+}
+@keyframes cmdFadeIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
+}
+.cmd-palette-box {
+    width: 100%;
+    max-width: 560px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    margin: 0 16px;
+}
+.cmd-palette-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-light);
+}
+.cmd-palette-header input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    color: var(--text-primary);
+    outline: none;
+    box-shadow: none;
+    padding: 0;
+    width: auto;
+}
+.cmd-palette-header input::placeholder {
+    color: var(--text-muted);
+}
+.cmd-palette-header button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+.cmd-palette-header button:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+.cmd-palette-hint {
+    padding: 10px 16px;
+    font-size: 0.767rem;
+    color: var(--text-muted);
+}
+.cmd-palette-hint kbd {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 5px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+}
+[data-theme="dark"] .cmd-palette-box {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+[data-theme="dark"] .cmd-palette-hint kbd {
+    background: var(--bg-tertiary);
+    border-color: #444;
+}
+
+/* ── Workspace role button group ─────────────────── */
+.ws-role-btn-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.ws-role-btn-group-lg {
+    gap: 8px;
+}
+.ws-role-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    font-family: var(--font);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.ws-role-btn-group-lg .ws-role-btn {
+    padding: 7px 16px;
+    font-size: 0.833rem;
+    gap: 7px;
+}
+.ws-role-btn:hover {
+    border-color: var(--coral);
+    color: var(--coral);
+    background: var(--coral-lighter);
+}
+.ws-role-btn.active {
+    border-color: var(--coral);
+    background: var(--coral);
+    color: #fff;
+}
+[data-theme="dark"] .ws-role-btn {
+    background: var(--bg-tertiary);
+    border-color: var(--border);
+    color: var(--text-secondary);
+}
+[data-theme="dark"] .ws-role-btn:hover {
+    border-color: var(--coral);
+    color: var(--coral);
+    background: var(--coral-lighter);
+}
+[data-theme="dark"] .ws-role-btn.active {
+    background: var(--coral);
+    border-color: var(--coral);
+    color: #fff;
+}
+
+/* Owner role badge */
+.ws-role-owner {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: #fff;
+}
+
