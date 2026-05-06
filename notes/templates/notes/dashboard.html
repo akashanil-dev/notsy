@@ -8,6 +8,13 @@
 <!-- Top nav -->
 <header class="topbar">
     <div class="topbar-inner">
+        <button class="topbar-link menu-toggle-btn" id="sidebar-toggle-btn" title="Main menu" style="margin-right: 8px; border:none; background:none; cursor:pointer;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
         <a href="{% url 'dashboard' %}" class="topbar-brand" id="nav-brand">
             <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
                 <rect width="36" height="36" rx="10" fill="#E8645A" />
@@ -83,8 +90,62 @@
     </div>
 </header>
 
+<div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <a href="{% url 'dashboard' %}?filter=active" class="sidebar-item {% if request.GET.filter != 'trash' and request.GET.filter != 'archive' and not tag_filter %}active{% endif %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span>Notes</span>
+            </a>
+            
+            {% if user_tags %}
+            <div class="sidebar-divider"></div>
+            {% for tag in user_tags %}
+            <a href="{% url 'dashboard' %}?tag={{ tag.name }}{% if search_query %}&q={{ search_query }}{% endif %}"
+                class="sidebar-item {% if tag_filter == tag.name %}active{% endif %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+                <span>{{ tag.name }}</span>
+            </a>
+            {% endfor %}
+            <a href="{% url 'account_settings' %}" class="sidebar-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                <span>Edit labels</span>
+            </a>
+            {% endif %}
+
+            <div class="sidebar-divider"></div>
+            
+            <a href="{% url 'dashboard' %}?filter=archive" class="sidebar-item {% if request.GET.filter == 'archive' %}active{% endif %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                    <rect x="1" y="3" width="22" height="5"></rect>
+                    <line x1="10" y1="12" x2="14" y2="12"></line>
+                </svg>
+                <span>Archive</span>
+            </a>
+            <a href="{% url 'dashboard' %}?filter=trash" class="sidebar-item {% if request.GET.filter == 'trash' %}active{% endif %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                <span>Bin</span>
+            </a>
+        </nav>
+    </aside>
+
 <main class="main-content">
-    <!-- Create bar + Tag filters -->
     <!-- Inline Note Creator -->
     <div class="inline-creator-outer">
         <div class="inline-creator-wrapper note-color-default" id="inline-creator-wrapper">
@@ -141,29 +202,7 @@
         </div>
     </div>
 
-    <!-- Tag filters -->
-    <div class="create-bar" style="margin-top: 10px;">
-        <div class="tag-filter-bar" style="margin-right: auto; margin-left: 0;">
-            <a href="{% url 'dashboard' %}?filter=active"
-                class="tag-filter-chip {% if request.GET.filter != 'trash' and request.GET.filter != 'archive' %}active{% endif %}">Active</a>
-            <a href="{% url 'dashboard' %}?filter=archive"
-                class="tag-filter-chip {% if request.GET.filter == 'archive' %}active{% endif %}">Archive</a>
-            <a href="{% url 'dashboard' %}?filter=trash"
-                class="tag-filter-chip {% if request.GET.filter == 'trash' %}active{% endif %}">Trash</a>
-        </div>
 
-        {% if user_tags %}
-        <div class="tag-filter-bar" id="tag-filter-bar">
-            <a href="{% url 'dashboard' %}{% if search_query %}?q={{ search_query }}{% endif %}"
-                class="tag-filter-chip {% if not tag_filter %}active{% endif %}" id="tag-filter-all">All</a>
-            {% for tag in user_tags %}
-            <a href="{% url 'dashboard' %}?tag={{ tag.name }}{% if search_query %}&q={{ search_query }}{% endif %}"
-                class="tag-filter-chip tag-color-{{ tag.color }} {% if tag_filter == tag.name %}active{% endif %}"
-                id="tag-filter-{{ tag.pk }}">{{ tag.name }}</a>
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
 
     <!-- Pinned notes -->
     {% if pinned_notes %}
@@ -204,10 +243,20 @@
     </div>
     {% endif %}
 </main>
+</div>
 
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // Sidebar toggle
+        const sidebarToggle = document.getElementById('sidebar-toggle-btn');
+        const sidebar = document.getElementById('sidebar');
+        if (sidebarToggle && sidebar) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+            });
+        }
+
         // ── Element refs ──────────────────────────────────
         const wrapper = document.getElementById('inline-creator-wrapper');
         const collapsed = document.getElementById('inline-creator-collapsed');
